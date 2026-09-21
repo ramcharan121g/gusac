@@ -90,76 +90,47 @@ export default function SsoModal({ isOpen, onClose }) {
           </div>
         )}
 
-        {/* Option 1: 1-Click Fast Student Sign-In */}
-        <div className="space-y-2">
-          <span className="text-[11px] font-mono text-slate-400 font-bold block uppercase tracking-wider">
-            Fast Institutional 1-Click Access
-          </span>
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => performSso('student@student.gitam.edu', 'Student Innovator')}
-            className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs font-mono flex items-center justify-between shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-xl bg-white/10 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-yellow-300" />
-              </div>
-              <div className="text-left">
-                <div className="text-white">Sign In as GITAM Student</div>
-                <div className="text-[10px] text-blue-200 font-normal">student@student.gitam.edu</div>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-white" />
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center">
-          <span className="w-full border-t border-slate-800"></span>
-          <span className="px-3 text-[11px] text-slate-500 bg-slate-900 absolute font-mono">
-            Or sign in with custom university ID
-          </span>
-        </div>
-
-        {/* Option 2: Enter custom email */}
-        <form onSubmit={handleCustomSubmit} className="space-y-3 font-mono text-xs">
+        {/* Official Institutional SSO Login Form */}
+        <form onSubmit={handleCustomSubmit} className="space-y-4 font-mono text-xs">
           <div>
             <label className="block text-slate-300 font-bold mb-1 text-[11px]">
-              University Email / Google Account *
+              Institutional Email / Google ID *
             </label>
             <input
               type="email"
               required
-              placeholder="e.g. vu24csen010... @student.gitam.edu"
+              placeholder="e.g. rollnumber@student.gitam.edu"
               value={customEmail}
               onChange={(e) => setCustomEmail(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-slate-700 text-white focus:outline-none focus:border-blue-500 font-sans"
+              className="w-full px-3.5 py-3 rounded-xl bg-black/60 border border-slate-700 text-white focus:outline-none focus:border-blue-500 font-sans text-xs placeholder:text-slate-500"
             />
+            <span className="text-[10px] text-slate-400 mt-1 block">
+              Supports <code className="text-blue-300">@student.gitam.edu</code>, <code className="text-blue-300">@gitam.edu</code>, <code className="text-blue-300">@gitam.in</code>, or verified Google accounts.
+            </span>
           </div>
 
           <div>
             <label className="block text-slate-300 font-bold mb-1 text-[11px]">
-              Full Name (Optional)
+              Student / Full Name (Optional)
             </label>
             <input
               type="text"
-              placeholder="e.g. Charan Kumar"
+              placeholder="e.g. Your Full Name"
               value={customName}
               onChange={(e) => setCustomName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-slate-700 text-white focus:outline-none focus:border-blue-500 font-sans"
+              className="w-full px-3.5 py-3 rounded-xl bg-black/60 border border-slate-700 text-white focus:outline-none focus:border-blue-500 font-sans text-xs placeholder:text-slate-500"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-600/60 shadow flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-bold font-mono text-xs shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 mt-2"
           >
             {loading ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Authenticating with IdP...</span>
+                <span>Authenticating with Institutional Gateway...</span>
               </div>
             ) : (
               <>

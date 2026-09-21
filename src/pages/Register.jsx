@@ -46,7 +46,6 @@ export default function Register() {
   // OTP Verification Step State
   const [isOtpStep, setIsOtpStep] = useState(false);
   const [otpCode, setOtpCode] = useState('');
-  const [demoOtpHint, setDemoOtpHint] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
 
   const [error, setError] = useState('');
@@ -129,10 +128,9 @@ export default function Register() {
         }
       });
 
-      setDemoOtpHint(res.demoOtp || '');
-      setOtpCode(res.demoOtp || '');
+      setOtpCode('');
       setIsOtpStep(true);
-      setSuccessNotice(`Verification code dispatched to ${cleanEmail}. Please enter the 6-digit OTP.`);
+      setSuccessNotice(`Verification code dispatched to ${cleanEmail}. Please enter the 6-digit OTP from your inbox.`);
     } catch (err) {
       setError(err.message || 'Failed to dispatch verification OTP.');
     } finally {
@@ -207,9 +205,8 @@ export default function Register() {
         method: 'POST',
         body: { email: form.email, userType }
       });
-      setDemoOtpHint(res.demoOtp || '');
-      setOtpCode(res.demoOtp || '');
-      setSuccessNotice('A new OTP has been dispatched to your email.');
+      setOtpCode('');
+      setSuccessNotice('A new OTP verification code has been dispatched to your email.');
     } catch (err) {
       setError(err.message || 'Failed to resend OTP.');
     }
@@ -563,18 +560,16 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Live Demo OTP Box for Instant Evaluation */}
-            {demoOtpHint && (
-              <div className="p-3.5 rounded-2xl bg-yellow-500/10 border border-yellow-500/30 text-xs font-mono text-yellow-300 space-y-1">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <Sparkles className="w-4 h-4 text-yellow-400" />
-                  <span>Interactive Demo OTP Preview:</span>
-                </div>
-                <p className="text-[11px] text-slate-300">
-                  We sent a 6-digit verification code to <strong>{form.email}</strong>. Please check your inbox.
-                </p>
+            {/* Official University Email Delivery Confirmation */}
+            <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-xs font-mono text-blue-300 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-blue-400">
+                <Mail className="w-4 h-4" />
+                <span>Verification Code Dispatched</span>
               </div>
-            )}
+              <p className="text-[11px] text-slate-300">
+                A 6-digit verification OTP has been sent to <strong>{form.email}</strong>. Please check your inbox (or spam folder) and enter it below.
+              </p>
+            </div>
 
             <form onSubmit={handleVerifyOtpAndRegister} className="space-y-4">
               <div>

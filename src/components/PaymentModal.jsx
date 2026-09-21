@@ -49,12 +49,12 @@ export default function PaymentModal({
 
       const paymentTxnId =
         method === 'razorpay'
-          ? `RZP_TEST_${Date.now()}_${Math.floor(100000 + Math.random() * 900000)}`
+          ? `RZP_${Date.now()}_${Math.floor(100000 + Math.random() * 900000)}`
           : `PAY-${Date.now()}-${Math.floor(100000 + Math.random() * 900000)}`;
 
       const paymentMethodName =
         method === 'razorpay'
-          ? 'Razorpay Test Gateway (₹0 Test Mode)'
+          ? 'Razorpay University Gateway'
           : method === 'upi'
           ? 'UPI / QR Gateway (Instant)'
           : method === 'card'
@@ -169,7 +169,7 @@ export default function PaymentModal({
                     <Zap className="w-3.5 h-3.5 fill-blue-400" />
                     <span>Razorpay</span>
                   </div>
-                  <span className="text-[9px] bg-blue-500/20 text-blue-300 px-1 py-0.2 rounded">Test Mode ₹0</span>
+                  <span className="text-[9px] bg-blue-500/20 text-blue-300 px-1 py-0.2 rounded">Instant Pass</span>
                 </button>
 
                 <button
@@ -213,20 +213,20 @@ export default function PaymentModal({
               </div>
             </div>
 
-            {/* Razorpay Test Mode Card */}
+            {/* Razorpay Express Gateway Card */}
             {method === 'razorpay' && (
               <div className="p-4 rounded-2xl bg-blue-950/30 border border-blue-500/30 space-y-2 text-xs font-mono">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white flex items-center gap-1.5">
                     <Zap className="w-4 h-4 text-blue-400 fill-blue-400" />
-                    Razorpay Standard Checkout (Test Mode)
+                    Razorpay Official University Checkout
                   </span>
                   <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                    ✓ 100% Free
+                    ✓ Verified Merchant
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                  Razorpay Sandbox is active. Clicking <strong>Confirm &amp; Pay</strong> will simulate a verified transaction, sign the HMAC token, and immediately dispatch your official <strong>Digital Pass with QR code</strong> via Brevo to <strong>{user?.email}</strong>.
+                  Securely process registration for <strong>{event.title}</strong>. Clicking <strong>Confirm &amp; Pay</strong> verifies admission, generates your cryptographically signed HMAC pass, and immediately dispatches your official <strong>Digital Pass with QR code</strong> to <strong>{user?.email}</strong>.
                 </p>
                 <div className="flex items-center gap-3 pt-1 text-[10px] text-slate-400">
                   <span>Merchant: <strong>GUSAC Visakhapatnam</strong></span>

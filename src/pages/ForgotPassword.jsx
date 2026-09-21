@@ -101,28 +101,11 @@ export default function ForgotPassword() {
           </form>
 
           {result && (
-            <div className="p-4 rounded-xl bg-slate-900 border border-slate-700 space-y-3 animate-in fade-in">
+            <div className="p-4 rounded-xl bg-slate-900 border border-slate-700 space-y-2 animate-in fade-in">
               <div className="flex items-start gap-2 text-xs text-emerald-400 font-mono">
                 <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{result.message}</span>
               </div>
-
-              {result.demoResetToken && (
-                <div className="pt-2 border-t border-slate-800 space-y-2">
-                  <span className="text-[11px] font-mono text-yellow-400 font-bold block">
-                    ⚡ Demo Environment: Instant Reset Link Dispatched:
-                  </span>
-                  <Link
-                    to={`/reset-password?token=${result.demoResetToken}`}
-                    className="block p-2.5 rounded-lg bg-black/60 border border-yellow-500/30 text-xs font-mono text-yellow-300 hover:bg-yellow-500/10 transition-colors break-all"
-                  >
-                    Click to Open Reset Link →
-                  </Link>
-                  <p className="text-[10px] text-slate-500 font-mono">
-                    Token SHA-256 hash was stored in DB. Valid for 15 minutes.
-                  </p>
-                </div>
-              )}
             </div>
           )}
 

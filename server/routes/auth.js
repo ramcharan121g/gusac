@@ -92,11 +92,10 @@ router.post('/send-otp', (req, res) => {
       [email, otpCode, expiresAt, false]
     ).catch((err) => console.error('[PostgreSQL OTP Log Error]:', err.message));
 
-    // In development environment, demoOtp is provided for instant testing convenience:
+    // Real transactional email dispatch via Brevo SMTP
     res.json({
       message: `A 6-digit verification code has been dispatched to ${email}.`,
-      expiresIn: '10 minutes',
-      demoOtp: otpCode
+      expiresIn: '10 minutes'
     });
   } catch (err) {
     console.error('Send OTP error:', err);
@@ -819,14 +818,9 @@ router.post('/forgot-password', (req, res) => {
       securityLevel: 'MEDIUM'
     });
 
-    // Provide reset URL directly in response for demo environment testing
-    const resetUrl = `http://localhost:3000/reset-password?token=${plainToken}`;
-
     res.json({
       message: genericSuccessMessage,
-      antiEnumerationNotice: '🛡️ Anti-Enumeration active: Response is identical whether or not the email exists.',
-      demoResetToken: plainToken,
-      demoResetUrl: resetUrl
+      antiEnumerationNotice: '🛡️ Anti-Enumeration active: Response is identical whether or not the email exists.'
     });
   } catch (err) {
     console.error('Forgot password error:', err);

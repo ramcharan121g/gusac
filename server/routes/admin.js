@@ -1,7 +1,7 @@
 import express from 'express';
 import { db, getDefaultSiteContent } from '../db.js';
 import { authenticateToken, requireAuth, requireRole, requireAdminMfa, requireReAuth } from '../middleware.js';
-import { logAuditEvent, sanitizeInput } from '../security.js';
+import { logAuditEvent, sanitizeInput, generateMfaSecret } from '../security.js';
 import { sendLeadershipDecisionEmail } from '../services/emailService.js';
 import { query as pgQuery } from '../db/postgres.js';
 
@@ -97,7 +97,7 @@ router.post('/users/:id/role', requireReAuth, (req, res) => {
   // If promoted to admin, enforce MFA if not already enabled
   if (newRole === 'admin' && !user.mfaEnabled) {
     user.mfaEnabled = true;
-    user.mfaSecret = 'JBSWY3DPEHPK3PXP'; // Seed default demo secret
+    user.mfaSecret = generateMfaSecret();
   }
 
   logAuditEvent({
