@@ -18,7 +18,8 @@ import {
   KeyRound,
   Sparkles,
   ShieldCheck,
-  GraduationCap
+  GraduationCap,
+  Check
 } from 'lucide-react';
 
 export default function Register() {
@@ -52,14 +53,33 @@ export default function Register() {
   const [successNotice, setSuccessNotice] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const calculatePasswordStrength = (pwd) => {
-    let score = 0;
-    if (pwd.length >= 8) score++;
-    if (/[A-Z]/.test(pwd)) score++;
-    if (/[a-z]/.test(pwd)) score++;
-    if (/[0-9]/.test(pwd)) score++;
-    if (/[^A-Za-z0-9]/.test(pwd)) score++;
-    return score;
+  const evaluatePassword = (pwd) => {
+    const hasMinLength = Boolean(pwd && pwd.length >= 8);
+    const hasUpper = /[A-Z]/.test(pwd || '');
+    const hasLower = /[a-z]/.test(pwd || '');
+    const hasNumber = /[0-9]/.test(pwd || '');
+    const hasSpecial = /[^A-Za-z0-9]/.test(pwd || '');
+
+    const categoriesMet = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+    const isValid = hasMinLength && categoriesMet >= 3;
+
+    let message = '';
+    if (!hasMinLength) {
+      message = 'Password must be at least 8 characters long.';
+    } else if (categoriesMet < 3) {
+      message = 'Password must contain at least 3 of: uppercase, lowercase, numbers, and special characters.';
+    }
+
+    return {
+      hasMinLength,
+      hasUpper,
+      hasLower,
+      hasNumber,
+      hasSpecial,
+      categoriesMet,
+      isValid,
+      message
+    };
   };
 
   const isGitamEmail = (email) => {
@@ -73,7 +93,7 @@ export default function Register() {
     );
   };
 
-  const strength = calculatePasswordStrength(form.password);
+  const pwdEval = evaluatePassword(form.password);
 
   // Step 1: Submit Form & Trigger OTP
   const handleInitiateRegistration = async (e) => {
@@ -107,8 +127,9 @@ export default function Register() {
       return;
     }
 
-    if (form.password.length < 8) {
-      setError('Password must be at least 8 characters long.');
+    // Comprehensive password validation BEFORE code generation
+    if (!pwdEval.isValid) {
+      setError(pwdEval.message);
       return;
     }
 
@@ -124,7 +145,8 @@ export default function Register() {
         method: 'POST',
         body: {
           email: cleanEmail,
-          userType
+          userType,
+          password: form.password
         }
       });
 
@@ -449,43 +471,89 @@ export default function Register() {
 
               {/* Create Password */}
               <div>
-                <label className="block text-slate-300 font-bold mb-1">
-                  Create Password *
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-slate-300 font-bold">
+                    Create Password *
+                  </label>
+                  {form.password && (
+                    <span
+                      className={`text-[10px] font-mono font-semibold transition-colors ${
+                        pwdEval.isValid
+                          ? 'text-emerald-400'
+                          : pwdEval.hasMinLength
+                          ? 'text-amber-400'
+                          : 'text-red-400'
+                      }`}
+                    >
+                      {pwdEval.isValid
+                        ? '✓ Security Policy Met'
+                        : `Satisfies ${pwdEval.categoriesMet}/3 categories`}
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
                   <input
                     type="password"
                     required
-                    placeholder="Min 8 chars, uppercase, number & symbol"
+                    placeholder="Min 8 chars, 3 of: upper, lower, number, symbol"
                     value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-black/60 border border-slate-700 text-white focus:outline-none focus:border-blue-500"
+                    onChange={(e) => {
+                      setForm({ ...form, password: e.target.value });
+                      if (error) setError('');
+                    }}
+                    className={`w-full pl-9 pr-3 py-2.5 rounded-xl bg-black/60 border text-white focus:outline-none transition-colors ${
+                      form.password
+                        ? pwdEval.isValid
+                          ? 'border-emerald-500/70 focus:border-emerald-400'
+                          : 'border-amber-500/60 focus:border-amber-400'
+                        : 'border-slate-700 focus:border-blue-500'
+                    }`}
                   />
                 </div>
 
-                {/* Strength Meter */}
+                {/* Real-Time Password Requirements Checklist */}
                 {form.password && (
-                  <div className="mt-1.5 flex items-center gap-1.5">
-                    <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <div
-                          key={level}
-                          className={`flex-1 h-full rounded-full transition-colors ${
-                            strength >= level
-                              ? strength <= 2
-                                ? 'bg-red-500'
-                                : strength <= 3
-                                ? 'bg-yellow-500'
-                                : 'bg-emerald-500'
-                              : 'bg-transparent'
-                          }`}
-                        />
-                      ))}
+                  <div className="mt-2.5 p-3 rounded-2xl bg-black/60 border border-slate-800 text-[11px] font-mono space-y-2 animate-in fade-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 font-semibold">Security Criteria:</span>
+                      <span className="text-[10px] text-slate-500">Must satisfy 8+ chars &amp; 3 of 4 types</span>
                     </div>
-                    <span className="text-[10px] text-slate-400">
-                      {strength <= 2 ? 'Weak' : strength <= 3 ? 'Medium' : 'Strong'}
-                    </span>
+
+                    <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                      <div className={`flex items-center gap-1.5 transition-colors ${pwdEval.hasMinLength ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
+                        {pwdEval.hasMinLength ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 h-3 text-center leading-3">•</span>}
+                        <span>At least 8 characters</span>
+                      </div>
+                      <div className={`flex items-center gap-1.5 transition-colors ${pwdEval.hasUpper ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
+                        {pwdEval.hasUpper ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 h-3 text-center leading-3">•</span>}
+                        <span>Uppercase (A-Z)</span>
+                      </div>
+                      <div className={`flex items-center gap-1.5 transition-colors ${pwdEval.hasLower ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
+                        {pwdEval.hasLower ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 h-3 text-center leading-3">•</span>}
+                        <span>Lowercase (a-z)</span>
+                      </div>
+                      <div className={`flex items-center gap-1.5 transition-colors ${pwdEval.hasNumber ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
+                        {pwdEval.hasNumber ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 h-3 text-center leading-3">•</span>}
+                        <span>Numbers (0-9)</span>
+                      </div>
+                      <div className={`flex items-center gap-1.5 col-span-2 transition-colors ${pwdEval.hasSpecial ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
+                        {pwdEval.hasSpecial ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 h-3 text-center leading-3">•</span>}
+                        <span>Special characters (!@#$%^&amp;*...)</span>
+                      </div>
+                    </div>
+
+                    {!pwdEval.isValid ? (
+                      <p className="text-[10px] text-amber-400/90 pt-1.5 border-t border-slate-800 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        <span>Password must contain at least 3 of: uppercase, lowercase, numbers, and special characters.</span>
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-emerald-400 pt-1.5 border-t border-slate-800 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 shrink-0" />
+                        <span>Ready! Password meets all cryptographic policy requirements.</span>
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

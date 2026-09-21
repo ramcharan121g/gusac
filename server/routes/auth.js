@@ -24,8 +24,15 @@ const router = express.Router();
 // ==========================================
 router.post('/send-otp', async (req, res) => {
   try {
-    let { email, userType } = req.body;
+    let { email, userType, password } = req.body;
     email = sanitizeInput(email?.toLowerCase());
+
+    if (password) {
+      const strength = validatePasswordStrength(password);
+      if (!strength.valid) {
+        return res.status(400).json({ error: strength.message });
+      }
+    }
 
     if (!email) {
       return res.status(400).json({ error: 'Valid email address is required.' });
