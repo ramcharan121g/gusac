@@ -4,6 +4,28 @@ import crypto from 'crypto';
 export const db = {
   users: [
     {
+      id: 'usr_admin_ramcharan',
+      firstName: 'Ram',
+      lastName: 'Charan',
+      name: 'Ram Charan (Lead Administrator)',
+      email: 'ramcharan20070@gmail.com',
+      phone: '+91 98480 12345',
+      userType: 'gitam',
+      collegeOrCompany: 'GITAM Deemed to be University, Visakhapatnam',
+      fromAddress: 'Visakhapatnam Campus, ICT Bhavan',
+      passwordHash: 'b04b693a01ba750069a29bfb91d92606:8d4e68f62ac5322e0efadf663c70f0cceb900d948057d7826bf6d74bd6d41594e65b084fd7c7e70cc07127cd4cac41fa92b7f4b65991437d07481a43aba96a3a',
+      salt: 'b04b693a01ba750069a29bfb91d92606',
+      role: 'admin',
+      mfaEnabled: false,
+      mfaSecret: null,
+      studentId: 'GUSAC-ADM-001',
+      wing: 'Core Executive & CyberSec',
+      year: 'Executive Lead & Administrator',
+      bio: 'Lead Administrator & Director at GUSAC GITAM.',
+      isVerified: true,
+      createdAt: '2026-01-10T10:00:00.000Z',
+    },
+    {
       id: 'usr_admin_01',
       firstName: 'GUSAC',
       lastName: 'Administrator',

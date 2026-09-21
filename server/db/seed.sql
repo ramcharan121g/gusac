@@ -2,27 +2,30 @@
 -- GUSAC INNOVATION HUB — INITIAL SEED DATA (VISAKHAPATNAM MAIN CAMPUS)
 -- ==============================================================================
 
--- 1. Default Super Admin (admin@gitam.in / MFA Enabled)
--- Password hash generated with scrypt: salt 8b671a5a871d34e2, hash verified
+-- 1. Default Super Admin (ramcharan20070@gmail.com / scrypt-hashed)
 INSERT INTO users (
     id, email, first_name, last_name, name, phone, user_type,
     college_or_company, student_id, role, password_hash, salt, mfa_enabled, mfa_secret
 ) VALUES (
-    'usr_admin_01',
-    'admin@gitam.in',
-    'GUSAC',
-    'Administrator',
-    'GUSAC Administrator',
-    '+91-891-2840501',
+    'usr_admin_ramcharan',
+    'ramcharan20070@gmail.com',
+    'Ram',
+    'Charan',
+    'Ram Charan (Lead Administrator)',
+    '+91-98480-12345',
     'gitam',
     'GITAM Deemed to be University, Visakhapatnam',
     'ADM-VSP-001',
     'admin',
-    '8b671a5a871d34e2:4e45c7eb163ffaa9c118182f7e7f78082980132a0c6a5bbceabcecebc3f3e8f6eec3b05f238cecb0313c0130cb021baee7be88bb5d706596850c95a04e76c125',
-    '8b671a5a871d34e2',
-    TRUE,
-    'JBSWY3DPEHPK3PXP'
-) ON CONFLICT (email) DO NOTHING;
+    'b04b693a01ba750069a29bfb91d92606:8d4e68f62ac5322e0efadf663c70f0cceb900d948057d7826bf6d74bd6d41594e65b084fd7c7e70cc07127cd4cac41fa92b7f4b65991437d07481a43aba96a3a',
+    'b04b693a01ba750069a29bfb91d92606',
+    FALSE,
+    NULL
+) ON CONFLICT (email) DO UPDATE SET
+    role = 'admin',
+    password_hash = EXCLUDED.password_hash,
+    salt = EXCLUDED.salt,
+    mfa_enabled = FALSE;
 
 -- 2. Initial Flagship Events
 INSERT INTO events (

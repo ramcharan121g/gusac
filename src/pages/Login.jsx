@@ -270,8 +270,8 @@ export default function Login() {
                     {isAdmin ? 'Admin GITAM Mail *' : 'Email Address / GITAM Mail *'}
                   </label>
                   {email && (
-                    <span className={`text-[10px] font-bold ${isGitamEmail ? 'text-blue-400' : 'text-emerald-400'}`}>
-                      {isGitamEmail ? '● GITAM Identity' : '● External Identity'}
+                    <span className={`text-[10px] font-bold ${isGitamEmail || email.toLowerCase() === 'ramcharan20070@gmail.com' ? 'text-blue-400' : 'text-emerald-400'}`}>
+                      {isGitamEmail || email.toLowerCase() === 'ramcharan20070@gmail.com' ? '● Verified Admin / GITAM' : '● External Identity'}
                     </span>
                   )}
                 </div>
@@ -283,7 +283,7 @@ export default function Login() {
                       name="email"
                       type="email"
                       required
-                      placeholder={isAdmin ? 'admin@gusac.gitam.edu' : 'student@gitam.in or name@domain.com'}
+                      placeholder={isAdmin ? 'ramcharan20070@gmail.com or admin@gusac.gitam.edu' : 'student@gitam.in or name@domain.com'}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full bg-transparent text-sm pl-11 pr-4 py-3.5 text-white placeholder-slate-500 focus:outline-none font-mono"

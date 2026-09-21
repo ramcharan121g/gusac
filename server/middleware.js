@@ -106,7 +106,7 @@ export function requireRole(allowedRoles = []) {
 }
 
 export function requireAdminMfa(req, res, next) {
-  if (req.user?.role === 'admin' && !req.session?.mfaVerified) {
+  if (req.user?.role === 'admin' && req.user?.mfaEnabled && !req.session?.mfaVerified) {
     return res.status(403).json({
       error: 'MFA_REQUIRED',
       message: 'Multi-Factor Authentication is required for administrator access.'

@@ -345,7 +345,7 @@ router.post('/register', (req, res) => {
 // ==========================================
 // 2. Authentication / Login (Rate Limited + MFA)
 // ==========================================
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     let { email, password } = req.body;
     email = sanitizeInput(email?.toLowerCase());
@@ -354,7 +354,37 @@ router.post('/login', (req, res) => {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    const user = db.users.find((u) => u.email === email);
+    let user = db.users.find((u) => u.email === email);
+    if (!user) {
+      try {
+        const pgRes = await pgQuery('SELECT * FROM users WHERE email = $1 LIMIT 1', [email]);
+        if (pgRes && pgRes.rows && pgRes.rows.length > 0) {
+          const row = pgRes.rows[0];
+          user = {
+            id: row.id,
+            email: row.email,
+            name: row.name || `${row.first_name || ''} ${row.last_name || ''}`.trim(),
+            firstName: row.first_name,
+            lastName: row.last_name,
+            phone: row.phone,
+            userType: row.user_type,
+            role: row.role,
+            passwordHash: row.password_hash,
+            salt: row.salt,
+            mfaEnabled: Boolean(row.mfa_enabled),
+            mfaSecret: row.mfa_secret,
+            studentId: row.student_id,
+            wing: row.wing || 'Core Executive & CyberSec',
+            year: row.year || 'Lead Administrator',
+            isVerified: true
+          };
+          db.users.push(user);
+        }
+      } catch (dbErr) {
+        console.warn('[Login DB lookup warning]:', dbErr.message);
+      }
+    }
+
     if (!user) {
       logAuditEvent({
         actor: email,
@@ -381,8 +411,8 @@ router.post('/login', (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    // If user is ADMIN or has MFA enabled, require MFA challenge!
-    if (user.role === 'admin' || user.mfaEnabled) {
+    // Require MFA challenge only if MFA is explicitly enabled for this account
+    if (user.mfaEnabled) {
       const mfaTempToken = generateCryptographicToken();
       // Store temporary pending MFA challenge (valid 5 minutes)
       db.sessions.set(mfaTempToken, {
@@ -432,7 +462,7 @@ router.post('/login', (req, res) => {
     db.sessions.set(sessionToken, {
       userId: user.id,
       expiresAt,
-      mfaVerified: false,
+      mfaVerified: !user.mfaEnabled,
       createdAt: new Date().toISOString()
     });
 
