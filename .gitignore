@@ -32,3 +32,4 @@ dist-ssr
 # Scratch & Temporary storage
 scratch/
 .tempmediaStorage/
+*.zip
