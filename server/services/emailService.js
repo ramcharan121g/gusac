@@ -12,7 +12,7 @@ export function getTransporter() {
     const pass = process.env.SMTP_PASS;
 
     if (!user || !pass) {
-      console.warn('⚠️ SMTP credentials not fully configured. Email sending will be mocked in console.');
+      console.warn('⚠️ SMTP credentials not configured. Please ensure SMTP_USER and SMTP_PASS are set.');
       return null;
     }
 

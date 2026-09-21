@@ -22,7 +22,7 @@ const router = express.Router();
 // ==========================================
 // 1. Email OTP Verification (Mandatory for Registration)
 // ==========================================
-router.post('/send-otp', (req, res) => {
+router.post('/send-otp', async (req, res) => {
   try {
     let { email, userType } = req.body;
     email = sanitizeInput(email?.toLowerCase());
@@ -71,16 +71,21 @@ router.post('/send-otp', (req, res) => {
       securityLevel: 'LOW'
     });
 
-    // Real transactional email dispatch via Brevo SMTP
-    sendOtpEmail({
-      toEmail: email,
-      name: email.split('@')[0],
-      otpCode,
-      purpose: `${userType === 'gitam' ? 'GITAM Student' : 'External Student'} Registration`
-    }).catch((err) => console.error('[Brevo SMTP] OTP Email dispatch background error:', err.message));
+    // Real transactional email dispatch via Brevo SMTP (awaited for serverless safety)
+    try {
+      const emailResult = await sendOtpEmail({
+        toEmail: email,
+        name: email.split('@')[0],
+        otpCode,
+        purpose: `${userType === 'gitam' ? 'GITAM Student' : 'External Student'} Registration`
+      });
+      console.log(`[Brevo SMTP] Real OTP dispatch succeeded for ${email}:`, emailResult?.messageId || 'SENT');
+    } catch (emailErr) {
+      console.error('[Brevo SMTP Error]: Failed to dispatch OTP email:', emailErr.message);
+    }
 
     // Persistent storage in Supabase PostgreSQL (Upsert for same email)
-    pgQuery(
+    await pgQuery(
       `INSERT INTO otp_verifications (email, otp_code, expires_at, verified, attempts_count)
        VALUES ($1, $2, $3, $4, 0)
        ON CONFLICT (email) DO UPDATE SET
@@ -92,7 +97,6 @@ router.post('/send-otp', (req, res) => {
       [email, otpCode, expiresAt, false]
     ).catch((err) => console.error('[PostgreSQL OTP Log Error]:', err.message));
 
-    // Real transactional email dispatch via Brevo SMTP
     res.json({
       message: `A 6-digit verification code has been dispatched to ${email}.`,
       expiresIn: '10 minutes'
