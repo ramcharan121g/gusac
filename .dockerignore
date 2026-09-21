@@ -1,0 +1,13 @@
+node_modules
+.git
+.gitignore
+.env
+.env.local
+.vscode
+dist
+*.log
+npm-debug.log*
+.tempmediaStorage
+.user_uploaded
+gusac-project.zip
+README.md

@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240" width="100%" height="100%">
+  <defs>
+    {/* Dark metallic spotlight background matching the exact attached banner */}
+    <radialGradient id="banner-spotlight" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stopColor="#222836" />
+      <stop offset="60%" stopColor="#10141d" />
+      <stop offset="100%" stopColor="#080a0f" />
+    </radialGradient>
+
+    {/* Facet gradients for true depth */}
+    <linearGradient id="g-side-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#1f242e" />
+      <stop offset="100%" stopColor="#000000" />
+    </linearGradient>
+    <linearGradient id="u-side-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FFD600" />
+      <stop offset="100%" stopColor="#C79500" />
+    </linearGradient>
+    <linearGradient id="s-side-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#2E8B3A" />
+      <stop offset="100%" stopColor="#14521E" />
+    </linearGradient>
+    <linearGradient id="a-side-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#1967D2" />
+      <stop offset="100%" stopColor="#0C3B82" />
+    </linearGradient>
+    <linearGradient id="c-side-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#E53935" />
+      <stop offset="100%" stopColor="#8A1313" />
+    </linearGradient>
+
+    <filter id="logo-drop-shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#000000" floodOpacity="0.85" />
+    </filter>
+  </defs>
+
+  {/* Spotlight Background Plate */}
+  <rect width="900" height="240" rx="20" fill="url(#banner-spotlight)" />
+
+  <g filter="url(#logo-drop-shadow)" transform="translate(25, 10)">
+    
+    {/* ========================================================
+        EXACT LETTER 'G' (White Face + Deep Black 3D Extrusion)
+       ======================================================== */}
+    <g id="exact-G">
+      {/* 3D Black Extrusions */}
+      <polygon points="120,24 178,14 195,102 175,190 120,186 142,174 152,98 138,36" fill="url(#g-side-1)" stroke="#000" strokeWidth="4" strokeLinejoin="round" />
+      <polygon points="138,36 178,14 120,24" fill="#2d3340" stroke="#000" strokeWidth="3" />
+      <polygon points="178,14 195,102 152,98" fill="#141821" stroke="#000" strokeWidth="3" />
+      <polygon points="195,102 175,190 142,174 152,98" fill="#000000" stroke="#000" strokeWidth="3" />
+      <polygon points="50,180 120,186 142,174 72,168" fill="#111620" stroke="#000" strokeWidth="3" />
+
+      {/* Front Face: Jagged White Comic Letter G */}
+      <polygon
+        points="65,28 138,36 146,88 112,90 110,118 142,116 142,174 62,168 36,112 48,62"
+        fill="#FFFFFF"
+        stroke="#000000"
+        strokeWidth="10"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Inner Cutout */}
+      <polygon
+        points="80,70 108,72 104,108 78,106"
+        fill="#121622"
+        stroke="#000000"
+        strokeWidth="8"
+        strokeLinejoin="round"
+      />
+    </g>
+
+    {/* ========================================================
+        EXACT LETTER 'U' (White Face + Bright Yellow 3D Extrusion)
+       ======================================================== */}
+    <g id="exact-U" transform="translate(155, 0)">
+      {/* 3D Yellow Extrusions */}
+      <polygon points="132,18 182,36 186,138 152,194 122,184 146,132 142,32" fill="url(#u-side-1)" stroke="#000" strokeWidth="4" strokeLinejoin="round" />
+      <polygon points="142,32 182,36 132,18" fill="#FFE53B" stroke="#000" strokeWidth="3" />
+      <polygon points="182,36 186,138 146,132" fill="#F5C400" stroke="#000" strokeWidth="3" />
+      <polygon points="186,138 152,194 122,184 146,132" fill="#B38600" stroke="#000" strokeWidth="3" />
+      <polygon points="42,174 122,184 152,194 68,190" fill="#997000" stroke="#000" strokeWidth="3" />
+
+      {/* Front Face: Jagged White Comic Letter U */}
+      <polygon
+        points="38,24 80,18 86,122 102,122 110,26 142,32 136,142 112,178 62,174 36,134"
+        fill="#FFFFFF"
+        stroke="#000000"
+        strokeWidth="10"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Inner yellow shadow facet */}
+      <polygon points="80,18 110,26 102,72 84,72" fill="#FBC02D" stroke="#000" strokeWidth="4" />
+    </g>
+
+    {/* ========================================================
+        EXACT LETTER 'S' (White Face + Forest Green 3D Extrusion)
+       ======================================================== */}
+    <g id="exact-S" transform="translate(305, 0)">
+      {/* 3D Green Extrusions */}
+      <polygon points="122,14 168,24 176,82 138,102 168,162 144,198 108,182 134,148 108,102 128,72 122,14" fill="url(#s-side-1)" stroke="#000" strokeWidth="4" strokeLinejoin="round" />
+      <polygon points="122,14 168,24 136,28" fill="#43A047" stroke="#000" strokeWidth="3" />
+      <polygon points="168,24 176,82 136,78" fill="#2E7D32" stroke="#000" strokeWidth="3" />
+      <polygon points="176,82 138,102 118,92" fill="#1B5E20" stroke="#000" strokeWidth="3" />
+      <polygon points="138,102 168,162 134,148" fill="#2E7D32" stroke="#000" strokeWidth="3" />
+      <polygon points="168,162 144,198 108,182 134,148" fill="#0F4215" stroke="#000" strokeWidth="3" />
+
+      {/* Front Face: Jagged White Comic Letter S */}
+      <polygon
+        points="48,26 126,16 136,68 84,80 90,110 134,116 128,174 50,180 38,128 80,122 76,96 40,88"
+        fill="#FFFFFF"
+        stroke="#000000"
+        strokeWidth="10"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </g>
+
+    {/* ========================================================
+        EXACT LETTER 'A' (White Face + Royal Blue 3D Extrusion)
+       ======================================================== */}
+    <g id="exact-A" transform="translate(445, 0)">
+      {/* 3D Blue Extrusions */}
+      <polygon points="94,10 144,26 174,172 138,192 120,172 138,92 94,10" fill="url(#a-side-1)" stroke="#000" strokeWidth="4" strokeLinejoin="round" />
+      <polygon points="94,10 144,26 104,30" fill="#2196F3" stroke="#000" strokeWidth="3" />
+      <polygon points="144,26 174,172 142,152" fill="#1565C0" stroke="#000" strokeWidth="3" />
+      <polygon points="174,172 138,192 120,172 142,152" fill="#0A2C68" stroke="#000" strokeWidth="3" />
+      <polygon points="38,176 78,180 68,146 28,142" fill="#0D47A1" stroke="#000" strokeWidth="3" />
+
+      {/* Front Face: Jagged White Comic Letter A */}
+      <polygon
+        points="84,12 108,30 142,172 104,174 94,132 58,132 46,168 14,164 68,20"
+        fill="#FFFFFF"
+        stroke="#000000"
+        strokeWidth="10"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Center Triangular Cutout */}
+      <polygon
+        points="74,52 88,102 64,102"
+        fill="#121622"
+        stroke="#000000"
+        strokeWidth="8"
+        strokeLinejoin="round"
+      />
+    </g>
+
+    {/* ========================================================
+        EXACT LETTER 'C' (White Face + Crimson Red 3D Extrusion)
+       ======================================================== */}
+    <g id="exact-C" transform="translate(590, 0)">
+      {/* 3D Red Extrusions */}
+      <polygon points="128,20 176,38 180,102 168,162 134,194 104,178 136,142 140,92 130,42" fill="url(#c-side-1)" stroke="#000" strokeWidth="4" strokeLinejoin="round" />
+      <polygon points="128,20 176,38 130,42" fill="#EF5350" stroke="#000" strokeWidth="3" />
+      <polygon points="176,38 180,102 140,92" fill="#D32F2F" stroke="#000" strokeWidth="3" />
+      <polygon points="180,102 168,162 136,142" fill="#C62828" stroke="#000" strokeWidth="3" />
+      <polygon points="168,162 134,194 104,178 136,142" fill="#7A1010" stroke="#000" strokeWidth="3" />
+
+      {/* Front Face: Jagged White Comic Letter C */}
+      <polygon
+        points="56,22 134,26 140,72 94,76 88,118 136,114 130,176 50,172 24,112 30,62"
+        fill="#FFFFFF"
+        stroke="#000000"
+        strokeWidth="10"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </g>
+
+  </g>
+</svg>
