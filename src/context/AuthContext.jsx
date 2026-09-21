@@ -86,6 +86,20 @@ export function AuthProvider({ children }) {
     return data;
   }
 
+  async function loginWithSso(email, name) {
+    const data = await apiRequest('/auth/sso-login', {
+      method: 'POST',
+      body: { email, name }
+    });
+
+    if (data.token) {
+      localStorage.setItem('gusac_token', data.token);
+      localStorage.setItem('gusac_user', JSON.stringify(data.user));
+      setUser(data.user);
+    }
+    return data;
+  }
+
   async function logout() {
     try {
       await apiRequest('/auth/logout', { method: 'POST' });
@@ -114,6 +128,7 @@ export function AuthProvider({ children }) {
         user,
         loading,
         login,
+        loginWithSso,
         verifyMfa,
         register,
         logout,

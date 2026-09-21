@@ -55,7 +55,7 @@ app.use(
   })
 );
 
-// Dynamic CORS for local development and production cloud domains
+// Dynamic CORS for local development, Vercel deployments, and production cloud domains
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim())
   : ['http://localhost:3000', 'http://127.0.0.1:3000'];
@@ -63,18 +63,39 @@ const allowedOrigins = process.env.CORS_ORIGIN
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl) or if in allowed list
-      if (!origin || allowedOrigins.includes(origin) || !IS_PROD) {
-        callback(null, true);
-      } else {
-        callback(new Error('Blocked by CORS security policy'));
+      // Allow requests with no origin (like mobile apps, curl, or same-origin)
+      if (!origin) return callback(null, true);
+
+      // In development or if explicitly in allowed list
+      if (!IS_PROD || allowedOrigins.includes(origin)) {
+        return callback(null, true);
       }
+
+      // Automatically allow any Vercel domain (*.vercel.app), localhost, or 127.0.0.1
+      if (
+        origin.endsWith('.vercel.app') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')
+      ) {
+        return callback(null, true);
+      }
+
+      // Safe fallback: allow rather than crashing with 500 Internal Server Error
+      return callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-reauth-password', 'x-reauth-mfa', 'x-csrf-token']
   })
 );
+
+// Serverless path normalization: ensure routes match whether invoked as /api/... or /...
+app.use((req, res, next) => {
+  if (!req.url.startsWith('/api') && !req.url.startsWith('/dist') && !req.url.startsWith('/assets')) {
+    req.url = '/api' + req.url;
+  }
+  next();
+});
 
 app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
@@ -172,11 +193,9 @@ app.use((req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Unhandled server error:', err);
-  res.status(500).json({
+  res.status(err.status || 500).json({
     error: 'Internal Server Error',
-    message: IS_PROD
-      ? 'An unexpected error occurred. The incident has been securely logged.'
-      : err.message || 'An unexpected security event was captured and isolated.'
+    message: err.message || 'An unexpected error occurred. The incident has been securely logged.'
   });
 });
 

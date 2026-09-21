@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import GusacLogo3D from '../components/GusacLogo3D';
+import SsoModal from '../components/SsoModal';
 import {
   Eye,
   EyeOff,
@@ -83,6 +84,7 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSsoModal, setShowSsoModal] = useState(false);
 
   // MFA Challenge State
   const [mfaChallenge, setMfaChallenge] = useState(null);
@@ -157,7 +159,8 @@ export default function Login() {
   };
 
   const handleGoogleSignIn = () => {
-    setError('Google / GITAM SSO authenticates via your institutional @gitam.in account upon cloud deployment.');
+    setError('');
+    setShowSsoModal(true);
   };
 
   const isGitamEmail = email.endsWith('@gitam.in') || email.endsWith('@gitam.edu');
@@ -504,6 +507,12 @@ export default function Login() {
 
         </div>
       </section>
+
+      {/* Google & GITAM Institutional SSO Modal */}
+      <SsoModal
+        isOpen={showSsoModal}
+        onClose={() => setShowSsoModal(false)}
+      />
 
     </div>
   );
