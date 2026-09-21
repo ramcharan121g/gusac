@@ -63,6 +63,17 @@ export default function Register() {
     return score;
   };
 
+  const isGitamEmail = (email) => {
+    if (!email) return false;
+    const clean = email.trim().toLowerCase();
+    return (
+      clean.endsWith('@gitam.in') ||
+      clean.endsWith('@gitam.edu') ||
+      clean.endsWith('.gitam.edu') ||
+      clean.includes('@student.gitam.edu')
+    );
+  };
+
   const strength = calculatePasswordStrength(form.password);
 
   // Step 1: Submit Form & Trigger OTP
@@ -86,8 +97,9 @@ export default function Register() {
       return;
     }
 
-    if (userType === 'gitam' && !form.email.endsWith('@gitam.in') && !form.email.endsWith('@gitam.edu')) {
-      setError('GITAM Student registration requires a valid GITAM email (@gitam.in or @gitam.edu).');
+    const cleanEmail = form.email.trim().toLowerCase();
+    if (userType === 'gitam' && !isGitamEmail(cleanEmail)) {
+      setError('GITAM Student registration requires your official university email (@student.gitam.edu, @gitam.in, or @gitam.edu).');
       return;
     }
 
@@ -112,7 +124,7 @@ export default function Register() {
       const res = await apiRequest('/auth/send-otp', {
         method: 'POST',
         body: {
-          email: form.email,
+          email: cleanEmail,
           userType
         }
       });
@@ -120,7 +132,7 @@ export default function Register() {
       setDemoOtpHint(res.demoOtp || '');
       setOtpCode(res.demoOtp || '');
       setIsOtpStep(true);
-      setSuccessNotice(`Verification code dispatched to ${form.email}. Please enter the 6-digit OTP.`);
+      setSuccessNotice(`Verification code dispatched to ${cleanEmail}. Please enter the 6-digit OTP.`);
     } catch (err) {
       setError(err.message || 'Failed to dispatch verification OTP.');
     } finally {
@@ -141,11 +153,13 @@ export default function Register() {
     setOtpLoading(true);
 
     try {
+      const cleanEmail = form.email.trim().toLowerCase();
+
       // 1. Verify OTP
       await apiRequest('/auth/verify-otp', {
         method: 'POST',
         body: {
-          email: form.email,
+          email: cleanEmail,
           otp: otpCode.trim()
         }
       });
@@ -156,7 +170,7 @@ export default function Register() {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         phone: form.phone.trim(),
-        email: form.email.trim(),
+        email: cleanEmail,
         studentId: form.studentId.trim(),
         collegeOrCompany: form.collegeOrCompany.trim(),
         fromAddress: form.fromAddress.trim(),
@@ -328,24 +342,56 @@ export default function Register() {
 
               {/* Email ID (GITAM Mail or General Email) */}
               <div>
-                <label className="block text-slate-300 font-bold mb-1">
-                  {userType === 'gitam' ? 'GITAM Mail ID (@gitam.in / @gitam.edu) *' : 'Email Address *'}
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-slate-300 font-bold">
+                    {userType === 'gitam' ? 'Official GITAM University Email *' : 'Email Address *'}
+                  </label>
+                  {userType === 'gitam' && form.email.trim() && (
+                    isGitamEmail(form.email) ? (
+                      <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1 font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        Verified University Domain
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-amber-400">
+                        Requires official GITAM domain
+                      </span>
+                    )
+                  )}
+                </div>
                 <div className="relative">
                   <Mail className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
                   <input
                     type="email"
                     required
-                    placeholder={userType === 'gitam' ? 'student@gitam.in' : 'user@domain.com'}
+                    placeholder={userType === 'gitam' ? 'your_roll_no@student.gitam.edu' : 'user@domain.com'}
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-black/60 border border-slate-700 text-white focus:outline-none focus:border-blue-500"
+                    onChange={(e) => {
+                      setForm({ ...form, email: e.target.value });
+                      if (error) setError('');
+                    }}
+                    className={`w-full pl-9 pr-3 py-2.5 rounded-xl bg-black/60 border text-white focus:outline-none transition-colors ${
+                      userType === 'gitam' && form.email.trim()
+                        ? isGitamEmail(form.email)
+                          ? 'border-emerald-500/80 focus:border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                          : 'border-slate-700 focus:border-blue-500'
+                        : 'border-slate-700 focus:border-blue-500'
+                    }`}
                   />
                 </div>
                 {userType === 'gitam' && (
-                  <span className="text-[10px] text-yellow-400/90 mt-1 block">
-                    Must be your official university email for automated student verification.
-                  </span>
+                  <div className="mt-1.5 text-[11px] font-mono">
+                    {isGitamEmail(form.email) ? (
+                      <span className="text-emerald-400 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                        Official GITAM student email recognized. Automated student verification active.
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 block">
+                        Supported domains: <code className="text-blue-300 bg-blue-950/40 px-1 py-0.5 rounded">@student.gitam.edu</code>, <code className="text-blue-300 bg-blue-950/40 px-1 py-0.5 rounded">@gitam.edu</code>, <code className="text-blue-300 bg-blue-950/40 px-1 py-0.5 rounded">@gitam.in</code>
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
 

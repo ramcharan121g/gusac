@@ -15,6 +15,7 @@ dist-ssr
 
 # Environment Variables & Secrets (CRITICAL)
 .env
+.env*
 .env*.local
 .env.production
 

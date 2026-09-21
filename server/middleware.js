@@ -35,9 +35,14 @@ export function authenticateToken(req, res, next) {
     lastName: user.lastName || user.name?.split(' ').slice(1).join(' ') || '',
     name: user.name,
     email: user.email,
-    phone: user.phone || '',
-    userType: user.userType || (user.email?.endsWith('@gitam.in') || user.email?.endsWith('@gitam.edu') ? 'gitam' : 'external'),
-    collegeOrCompany: user.collegeOrCompany || (user.userType === 'gitam' ? 'GITAM University' : 'External Institution'),
+    userType: user.userType || (
+      user.email?.endsWith('@gitam.in') ||
+      user.email?.endsWith('@gitam.edu') ||
+      user.email?.endsWith('.gitam.edu') ||
+      user.email?.includes('@student.gitam.edu')
+        ? 'gitam'
+        : 'external'
+    ),
     fromAddress: user.fromAddress || '',
     role: user.role,
     mfaEnabled: user.mfaEnabled,

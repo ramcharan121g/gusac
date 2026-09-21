@@ -57,9 +57,14 @@ router.get('/users', (req, res) => {
     lastName: u.lastName || u.name?.split(' ').slice(1).join(' ') || '',
     name: u.name,
     email: u.email,
-    phone: u.phone || '',
-    userType: u.userType || (u.email?.endsWith('@gitam.in') || u.email?.endsWith('@gitam.edu') ? 'gitam' : 'external'),
-    collegeOrCompany: u.collegeOrCompany || '',
+    userType: u.userType || (
+      u.email?.endsWith('@gitam.in') ||
+      u.email?.endsWith('@gitam.edu') ||
+      u.email?.endsWith('.gitam.edu') ||
+      u.email?.includes('@student.gitam.edu')
+        ? 'gitam'
+        : 'external'
+    ),
     fromAddress: u.fromAddress || '',
     role: u.role,
     mfaEnabled: u.mfaEnabled,

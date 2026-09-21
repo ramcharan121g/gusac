@@ -36,9 +36,12 @@ router.post('/send-otp', (req, res) => {
       return res.status(400).json({ error: 'Please provide a valid email address.' });
     }
 
-    if (userType === 'gitam' && !email.endsWith('@gitam.in') && !email.endsWith('@gitam.edu')) {
+    const cleanEmail = email.trim().toLowerCase();
+    const isGitam = cleanEmail.endsWith('@gitam.in') || cleanEmail.endsWith('@gitam.edu') || cleanEmail.endsWith('.gitam.edu') || cleanEmail.includes('@student.gitam.edu');
+
+    if (userType === 'gitam' && !isGitam) {
       return res.status(400).json({
-        error: 'GITAM student registration requires a valid GITAM email (@gitam.in or @gitam.edu).'
+        error: 'GITAM student registration requires a valid university email (@student.gitam.edu, @gitam.in, or @gitam.edu).'
       });
     }
 
@@ -199,8 +202,11 @@ router.post('/register', (req, res) => {
       return res.status(400).json({ error: 'Passwords do not match. Please re-enter.' });
     }
 
-    if (userType === 'gitam' && !targetEmail.endsWith('@gitam.in') && !targetEmail.endsWith('@gitam.edu')) {
-      return res.status(400).json({ error: 'GITAM registration requires a valid GITAM email address (@gitam.in or @gitam.edu).' });
+    const cleanTargetEmail = targetEmail.trim().toLowerCase();
+    const isGitamTarget = cleanTargetEmail.endsWith('@gitam.in') || cleanTargetEmail.endsWith('@gitam.edu') || cleanTargetEmail.endsWith('.gitam.edu') || cleanTargetEmail.includes('@student.gitam.edu');
+
+    if (userType === 'gitam' && !isGitamTarget) {
+      return res.status(400).json({ error: 'GITAM registration requires a valid university email address (@student.gitam.edu, @gitam.in, or @gitam.edu).' });
     }
 
     if (userType === 'external' && !collegeOrCompany) {
