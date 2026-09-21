@@ -207,6 +207,18 @@ if (!process.env.VERCEL) {
   server = app.listen(PORT, () => {
     console.log(`🛡️ GUSAC Secure Backend Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
     console.log(`🔒 OWASP Security Middleware & Google Cloud Run Hooks Active`);
+
+    // Pre-warm Brevo SMTP persistent connection pool for lightning-fast OTP dispatches
+    try {
+      import('./services/emailService.js').then(({ getTransporter }) => {
+        const mailer = getTransporter();
+        if (mailer) {
+          mailer.verify()
+            .then(() => console.log('⚡ [Brevo SMTP] Connection pool pre-warmed & active on Port 465 direct SSL'))
+            .catch((e) => console.warn('[Brevo SMTP Pool Note]:', e.message));
+        }
+      });
+    } catch (_) {}
   });
 
   const gracefulShutdown = (signal) => {

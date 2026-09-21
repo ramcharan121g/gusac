@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../utils/api';
@@ -19,7 +19,9 @@ import {
   Sparkles,
   ShieldCheck,
   GraduationCap,
-  Check
+  Check,
+  Clock,
+  Zap
 } from 'lucide-react';
 
 export default function Register() {
@@ -48,10 +50,29 @@ export default function Register() {
   const [isOtpStep, setIsOtpStep] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
+  const otpInputRef = useRef(null);
 
   const [error, setError] = useState('');
   const [successNotice, setSuccessNotice] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  useEffect(() => {
+    if (isOtpStep && otpInputRef.current) {
+      otpInputRef.current.focus();
+    }
+  }, [isOtpStep]);
 
   const evaluatePassword = (pwd) => {
     const hasMinLength = Boolean(pwd && pwd.length >= 8);
@@ -152,6 +173,7 @@ export default function Register() {
 
       setOtpCode('');
       setIsOtpStep(true);
+      setResendCooldown(30);
       setSuccessNotice(`Verification code dispatched to ${cleanEmail}. Please enter the 6-digit OTP from your inbox.`);
     } catch (err) {
       setError(err.message || 'Failed to dispatch verification OTP.');
@@ -221,16 +243,28 @@ export default function Register() {
   };
 
   const handleResendOtp = async () => {
+    if (resendCooldown > 0 || resendLoading) return;
     setError('');
+    setResendLoading(true);
     try {
       const res = await apiRequest('/auth/send-otp', {
         method: 'POST',
-        body: { email: form.email, userType }
+        body: {
+          email: form.email.trim().toLowerCase(),
+          userType,
+          password: form.password
+        }
       });
       setOtpCode('');
-      setSuccessNotice('A new OTP verification code has been dispatched to your email.');
+      setResendCooldown(30);
+      setSuccessNotice(`A fresh OTP verification code has been dispatched to ${form.email}.`);
+      if (otpInputRef.current) {
+        otpInputRef.current.focus();
+      }
     } catch (err) {
       setError(err.message || 'Failed to resend OTP.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -655,6 +689,7 @@ export default function Register() {
                 <div className="relative">
                   <KeyRound className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
                   <input
+                    ref={otpInputRef}
                     type="text"
                     maxLength={6}
                     required
@@ -681,15 +716,23 @@ export default function Register() {
                 )}
               </button>
 
-              <div className="flex items-center justify-between text-xs font-mono text-slate-400 pt-2">
+              <div className="flex items-center justify-between text-xs font-mono text-slate-400 pt-2 border-t border-slate-800/80">
                 <span>Didn't receive code?</span>
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  className="text-blue-400 hover:text-blue-300 font-bold"
-                >
-                  Resend OTP Code
-                </button>
+                {resendCooldown > 0 ? (
+                  <span className="text-slate-500 flex items-center gap-1.5 font-semibold">
+                    <Clock className="w-3.5 h-3.5 text-slate-500 animate-pulse" />
+                    Resend in {resendCooldown}s
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendLoading}
+                    className="text-blue-400 hover:text-blue-300 font-bold transition-colors disabled:opacity-50"
+                  >
+                    {resendLoading ? 'Dispatching code...' : 'Resend OTP Code'}
+                  </button>
+                )}
               </div>
             </form>
 

@@ -78,31 +78,33 @@ router.post('/send-otp', async (req, res) => {
       securityLevel: 'LOW'
     });
 
-    // Real transactional email dispatch via Brevo SMTP (awaited for serverless safety)
-    try {
-      const emailResult = await sendOtpEmail({
+    // Concurrently dispatch real transactional email and persist to database for lowest latency
+    const [emailResult] = await Promise.all([
+      sendOtpEmail({
         toEmail: email,
         name: email.split('@')[0],
         otpCode,
         purpose: `${userType === 'gitam' ? 'GITAM Student' : 'External Student'} Registration`
-      });
-      console.log(`[Brevo SMTP] Real OTP dispatch succeeded for ${email}:`, emailResult?.messageId || 'SENT');
-    } catch (emailErr) {
-      console.error('[Brevo SMTP Error]: Failed to dispatch OTP email:', emailErr.message);
-    }
+      }).catch((emailErr) => {
+        console.error('[Brevo SMTP Error]: Failed to dispatch OTP email:', emailErr.message);
+        return null;
+      }),
+      pgQuery(
+        `INSERT INTO otp_verifications (email, otp_code, expires_at, verified, attempts_count)
+         VALUES ($1, $2, $3, $4, 0)
+         ON CONFLICT (email) DO UPDATE SET
+           otp_code = EXCLUDED.otp_code,
+           expires_at = EXCLUDED.expires_at,
+           verified = false,
+           attempts_count = 0,
+           created_at = CURRENT_TIMESTAMP`,
+        [email, otpCode, expiresAt, false]
+      ).catch((err) => console.error('[PostgreSQL OTP Log Error]:', err.message))
+    ]);
 
-    // Persistent storage in Supabase PostgreSQL (Upsert for same email)
-    await pgQuery(
-      `INSERT INTO otp_verifications (email, otp_code, expires_at, verified, attempts_count)
-       VALUES ($1, $2, $3, $4, 0)
-       ON CONFLICT (email) DO UPDATE SET
-         otp_code = EXCLUDED.otp_code,
-         expires_at = EXCLUDED.expires_at,
-         verified = false,
-         attempts_count = 0,
-         created_at = CURRENT_TIMESTAMP`,
-      [email, otpCode, expiresAt, false]
-    ).catch((err) => console.error('[PostgreSQL OTP Log Error]:', err.message));
+    if (emailResult?.messageId) {
+      console.log(`[Brevo SMTP] Real OTP dispatch succeeded for ${email}:`, emailResult.messageId);
+    }
 
     res.json({
       message: `A 6-digit verification code has been dispatched to ${email}.`,

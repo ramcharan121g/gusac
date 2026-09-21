@@ -7,7 +7,7 @@ let transporter = null;
 export function getTransporter() {
   if (!transporter) {
     const host = process.env.SMTP_HOST || 'smtp-relay.brevo.com';
-    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const port = parseInt(process.env.SMTP_PORT || '465', 10);
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
 
@@ -20,6 +20,14 @@ export function getTransporter() {
       host,
       port,
       secure: port === 465,
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      rateDelta: 1000,
+      rateLimit: 5,
+      connectionTimeout: 8000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
       auth: {
         user,
         pass,
@@ -29,7 +37,7 @@ export function getTransporter() {
   return transporter;
 }
 
-const EMAIL_SENDER = process.env.EMAIL_FROM || '"GUSAC Visakhapatnam Main Campus" <noreply@gusac.gitam.edu>';
+const EMAIL_SENDER = process.env.EMAIL_FROM || '"GUSAC Visakhapatnam Main Campus" <ba6a09001@smtp-brevo.com>';
 
 /**
  * Send 6-digit OTP verification email
@@ -95,9 +103,17 @@ export async function sendOtpEmail({ toEmail, name, otpCode, purpose = 'Account 
   const result = await mailer.sendMail({
     from: EMAIL_SENDER,
     to: toEmail,
+    replyTo: 'noreply@gusac.gitam.edu',
     subject: `${otpCode} is your GUSAC Verification Code`,
     text: `Your GUSAC verification code is: ${otpCode}. Valid for 10 minutes.`,
     html,
+    priority: 'high',
+    headers: {
+      'X-Priority': '1 (Highest)',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'High',
+      'X-Entity-Ref-ID': `otp-${Date.now()}`
+    }
   });
 
   return { success: true, messageId: result.messageId };
