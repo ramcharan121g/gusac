@@ -29,7 +29,7 @@ export function getTransporter() {
   return transporter;
 }
 
-const EMAIL_SENDER = process.env.EMAIL_FROM || '"GUSAC Visakhapatnam" <ramcharan20070@gmail.com>';
+const EMAIL_SENDER = process.env.EMAIL_FROM || '"GUSAC Visakhapatnam Main Campus" <noreply@gusac.gitam.edu>';
 
 /**
  * Send 6-digit OTP verification email

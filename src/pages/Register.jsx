@@ -569,6 +569,14 @@ export default function Register() {
               <p className="text-[11px] text-slate-300">
                 A 6-digit verification OTP has been sent to <strong>{form.email}</strong>. Please check your inbox (or spam folder) and enter it below.
               </p>
+              {userType === 'gitam' && (
+                <p className="text-[11px] text-blue-300/90 pt-1 border-t border-blue-500/20">
+                  💡 <strong>GITAM Students:</strong> Check your official Microsoft 365 Outlook inbox at{' '}
+                  <a href="https://outlook.office.com" target="_blank" rel="noopener noreferrer" className="underline text-blue-300 hover:text-white font-bold">
+                    outlook.office.com
+                  </a>.
+                </p>
+              )}
             </div>
 
             <form onSubmit={handleVerifyOtpAndRegister} className="space-y-4">
