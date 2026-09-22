@@ -443,7 +443,7 @@ router.get('/site-content', (req, res) => {
   });
 });
 
-router.put('/site-content', (req, res) => {
+router.put('/site-content', async (req, res) => {
   const { siteContent } = req.body;
 
   if (!siteContent || typeof siteContent !== 'object') {
@@ -451,23 +451,32 @@ router.put('/site-content', (req, res) => {
   }
 
   // Deep update of siteContent sections
-  db.siteContent = {
-    ...db.siteContent,
-    ...siteContent
-  };
+  for (const key of Object.keys(siteContent)) {
+    if (typeof siteContent[key] === 'object' && siteContent[key] !== null && !Array.isArray(siteContent[key])) {
+      db.siteContent[key] = {
+        ...(db.siteContent[key] || {}),
+        ...siteContent[key]
+      };
+    } else {
+      db.siteContent[key] = siteContent[key];
+    }
+  }
 
   savePersistentSiteContent(db.siteContent);
 
-  pgQuery(
-    `CREATE TABLE IF NOT EXISTS site_settings (key VARCHAR(64) PRIMARY KEY, value JSONB NOT NULL, updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP)`
-  ).then(() => {
-    return pgQuery(
+  try {
+    await pgQuery(
+      `CREATE TABLE IF NOT EXISTS site_settings (key VARCHAR(64) PRIMARY KEY, value JSONB NOT NULL, updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP)`
+    );
+    await pgQuery(
       `INSERT INTO site_settings (key, value, updated_at) 
        VALUES ('site_content', $1, CURRENT_TIMESTAMP) 
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
       [JSON.stringify(db.siteContent)]
     );
-  }).catch((e) => console.warn('[PG SiteContent Save Warning]:', e.message));
+  } catch (e) {
+    console.warn('[PG SiteContent Save Warning]:', e.message);
+  }
 
   logAuditEvent({
     actor: req.user.email,
@@ -485,16 +494,20 @@ router.put('/site-content', (req, res) => {
   });
 });
 
-router.post('/site-content/reset', (req, res) => {
+router.post('/site-content/reset', async (req, res) => {
   db.siteContent = getDefaultSiteContent();
   savePersistentSiteContent(db.siteContent);
 
-  pgQuery(
-    `INSERT INTO site_settings (key, value, updated_at) 
-     VALUES ('site_content', $1, CURRENT_TIMESTAMP) 
-     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
-    [JSON.stringify(db.siteContent)]
-  ).catch((e) => console.warn('[PG SiteContent Reset Warning]:', e.message));
+  try {
+    await pgQuery(
+      `INSERT INTO site_settings (key, value, updated_at) 
+       VALUES ('site_content', $1, CURRENT_TIMESTAMP) 
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+      [JSON.stringify(db.siteContent)]
+    );
+  } catch (e) {
+    console.warn('[PG SiteContent Reset Warning]:', e.message);
+  }
 
   logAuditEvent({
     actor: req.user.email,

@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n \"API,VITE\" -c \"blue,magenta\" \"node server/index.js\" \"vite\"",
+    "dev": "concurrently -n \"API,VITE\" -c \"blue,magenta\" \"node --watch server/index.js\" \"vite\"",
     "start": "node server/index.js",
     "server": "node server/index.js",
     "client": "vite",
