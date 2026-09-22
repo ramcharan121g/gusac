@@ -323,3 +323,98 @@ export async function sendLeadershipDecisionEmail({ toEmail, name, requestedRole
   return { success: true, messageId: result.messageId };
 }
 
+/**
+ * Send Password Reset Email with anti-enumeration cryptographic token link
+ */
+export async function sendPasswordResetEmail({ toEmail, name, resetUrl }) {
+  const mailer = getTransporter();
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { margin: 0; padding: 0; background-color: #0b1120; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 600px; margin: 40px auto; background: #0f172a; border-radius: 16px; border: 1px solid #1e293b; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .header { background: linear-gradient(135deg, #0284c7 0%, #1e40af 100%); padding: 32px 24px; text-align: center; }
+        .brand { color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: 1px; margin: 0; }
+        .subbrand { color: #bae6fd; font-size: 13px; font-weight: 500; margin: 6px 0 0 0; text-transform: uppercase; letter-spacing: 2px; }
+        .content { padding: 36px 32px; color: #f1f5f9; }
+        .greeting { font-size: 20px; font-weight: 600; margin: 0 0 16px 0; color: #f8fafc; }
+        .intro { font-size: 15px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; }
+        .btn-wrapper { text-align: center; margin: 32px 0; }
+        .btn { display: inline-block; background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff !important; text-decoration: none; padding: 14px 36px; border-radius: 12px; font-weight: 700; font-size: 15px; letter-spacing: 0.5px; box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.4); }
+        .fallback-box { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px 16px; word-break: break-all; font-family: monospace; font-size: 12px; color: #38bdf8; margin: 20px 0; }
+        .fallback-box a { color: #38bdf8; text-decoration: none; }
+        .meta-notice { font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 16px 0; }
+        .warning { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 6px; font-size: 13px; color: #fcd34d; margin-top: 24px; line-height: 1.5; }
+        .footer { background: #080d1a; padding: 24px; text-align: center; border-top: 1px solid #1e293b; }
+        .footer p { margin: 0; font-size: 12px; color: #475569; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 class="brand">GUSAC</h1>
+          <p class="subbrand">GITAM University Science & Activity Center • Visakhapatnam Campus</p>
+        </div>
+        <div class="content">
+          <p class="greeting">Hello ${name || 'Innovator'},</p>
+          <p class="intro">
+            We received an account recovery request to reset the password associated with your GUSAC account (<strong>${toEmail}</strong>).
+          </p>
+          
+          <div class="btn-wrapper">
+            <a href="${resetUrl}" class="btn" target="_blank" rel="noopener noreferrer">Reset My Password</a>
+          </div>
+
+          <p class="meta-notice">
+            If the button above does not work, copy and paste this recovery link into your browser:
+          </p>
+          <div class="fallback-box">
+            <a href="${resetUrl}" target="_blank" rel="noopener noreferrer">${resetUrl}</a>
+          </div>
+
+          <p class="meta-notice">
+            ⏱️ <strong>Time Limit:</strong> This cryptographic recovery link expires in <strong>15 minutes</strong> and can only be used once.
+          </p>
+
+          <div class="warning">
+            🛡️ <strong>Security Notice:</strong> If you did not request a password reset, no action is required. Your current password remains secure and active sessions will not be affected unless you complete the reset.
+          </div>
+        </div>
+        <div class="footer">
+          <p>© 2026 GUSAC Visakhapatnam. All rights reserved.</p>
+          <p style="margin-top: 4px;">GITAM Deemed to be University, Gandhinagar, Rushikonda, Visakhapatnam, AP 530045</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  if (!mailer) {
+    console.log(`[MOCK EMAIL] Password reset for ${toEmail}: ${resetUrl}`);
+    return { success: true, mocked: true };
+  }
+
+  const result = await mailer.sendMail({
+    from: EMAIL_SENDER,
+    to: toEmail,
+    replyTo: 'noreply@gusac.gitam.edu',
+    subject: `🔐 Reset Your GUSAC Account Password`,
+    text: `Hello ${name || 'Innovator'},\n\nWe received a password reset request for your GUSAC account (${toEmail}).\n\nReset your password here (valid for 15 minutes):\n${resetUrl}\n\nIf you did not request this, you can safely ignore this email. Your account remains secure.\n\n— GUSAC Visakhapatnam Main Campus`,
+    html,
+    priority: 'high',
+    headers: {
+      'X-Priority': '1 (Highest)',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'High',
+      'X-Entity-Ref-ID': `pwd-reset-${Date.now()}`
+    }
+  });
+
+  return { success: true, messageId: result.messageId };
+}
+
+

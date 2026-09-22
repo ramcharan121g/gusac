@@ -13,7 +13,7 @@ import {
   validatePasswordStrength
 } from '../security.js';
 import { authenticateToken, requireAuth } from '../middleware.js';
-import { sendOtpEmail } from '../services/emailService.js';
+import { sendOtpEmail, sendPasswordResetEmail } from '../services/emailService.js';
 import { query as pgQuery } from '../db/postgres.js';
 
 const router = express.Router();
@@ -809,7 +809,7 @@ router.post('/mfa/disable', authenticateToken, requireAuth, (req, res) => {
 // ==========================================
 // 5. Secure Anti-Enumeration Password Reset
 // ==========================================
-router.post('/forgot-password', (req, res) => {
+router.post('/forgot-password', async (req, res) => {
   try {
     let { email } = req.body;
     email = sanitizeInput(email?.toLowerCase());
@@ -821,7 +821,36 @@ router.post('/forgot-password', (req, res) => {
       return res.json({ message: genericSuccessMessage });
     }
 
-    const user = db.users.find((u) => u.email === email);
+    let user = db.users.find((u) => u.email === email);
+    if (!user) {
+      try {
+        const pgRes = await pgQuery('SELECT * FROM users WHERE email = $1 LIMIT 1', [email]);
+        if (pgRes && pgRes.rows && pgRes.rows.length > 0) {
+          const row = pgRes.rows[0];
+          user = {
+            id: row.id,
+            email: row.email,
+            name: row.name || `${row.first_name || ''} ${row.last_name || ''}`.trim(),
+            firstName: row.first_name,
+            lastName: row.last_name,
+            phone: row.phone,
+            userType: row.user_type,
+            role: row.role,
+            passwordHash: row.password_hash,
+            salt: row.salt,
+            mfaEnabled: Boolean(row.mfa_enabled),
+            mfaSecret: row.mfa_secret,
+            studentId: row.student_id,
+            wing: row.wing || 'Core Executive & CyberSec',
+            year: row.year || 'Lead Administrator',
+            isVerified: true
+          };
+          db.users.push(user);
+        }
+      } catch (dbErr) {
+        console.warn('[Forgot Password DB lookup warning]:', dbErr.message);
+      }
+    }
 
     // If user does not exist, return generic message without exposing user enumeration!
     if (!user) {
@@ -846,10 +875,37 @@ router.post('/forgot-password', (req, res) => {
 
     db.passwordResetTokens.set(tokenHash, {
       userId: user.id,
+      email: user.email,
       expiresAt,
       used: false,
       createdAt: new Date().toISOString()
     });
+
+    // Build absolute password reset URL
+    const origin = req.get('origin') || req.get('referer');
+    let baseUrl = process.env.APP_URL;
+    if (!baseUrl && origin) {
+      try {
+        const parsed = new URL(origin);
+        baseUrl = `${parsed.protocol}//${parsed.host}`;
+      } catch {}
+    }
+    if (!baseUrl) {
+      baseUrl = 'http://localhost:3000';
+    }
+    const resetUrl = `${baseUrl}/reset-password?token=${plainToken}`;
+
+    // Dispatch secure password recovery email via Brevo SMTP
+    try {
+      const emailResult = await sendPasswordResetEmail({
+        toEmail: user.email,
+        name: user.name || user.firstName,
+        resetUrl
+      });
+      console.log(`[Forgot Password] Recovery email dispatched to ${user.email} (Message ID: ${emailResult.messageId || 'mocked'})`);
+    } catch (mailErr) {
+      console.error('[Forgot Password Email Dispatch Error]:', mailErr);
+    }
 
     logAuditEvent({
       actor: user.email,
@@ -857,7 +913,7 @@ router.post('/forgot-password', (req, res) => {
       action: 'PASSWORD_RESET_TOKEN_GENERATED',
       ip: req.ip,
       status: 'TOKEN_HASHED_&_DISPATCHED',
-      details: `Cryptographic token generated. Only SHA-256 hash stored in DB with 15m expiration.`,
+      details: `Cryptographic token generated and password reset email dispatched. Only SHA-256 hash stored in DB with 15m expiration.`,
       securityLevel: 'MEDIUM'
     });
 
@@ -871,7 +927,7 @@ router.post('/forgot-password', (req, res) => {
   }
 });
 
-router.post('/reset-password', (req, res) => {
+router.post('/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) {
@@ -904,7 +960,37 @@ router.post('/reset-password', (req, res) => {
       return res.status(400).json({ error: 'Password reset link has expired. Please request a new one.' });
     }
 
-    const user = db.users.find((u) => u.id === tokenRecord.userId);
+    let user = db.users.find((u) => u.id === tokenRecord.userId);
+    if (!user) {
+      try {
+        const pgRes = await pgQuery('SELECT * FROM users WHERE id = $1 LIMIT 1', [tokenRecord.userId]);
+        if (pgRes && pgRes.rows && pgRes.rows.length > 0) {
+          const row = pgRes.rows[0];
+          user = {
+            id: row.id,
+            email: row.email,
+            name: row.name || `${row.first_name || ''} ${row.last_name || ''}`.trim(),
+            firstName: row.first_name,
+            lastName: row.last_name,
+            phone: row.phone,
+            userType: row.user_type,
+            role: row.role,
+            passwordHash: row.password_hash,
+            salt: row.salt,
+            mfaEnabled: Boolean(row.mfa_enabled),
+            mfaSecret: row.mfa_secret,
+            studentId: row.student_id,
+            wing: row.wing || 'Core Executive & CyberSec',
+            year: row.year || 'Lead Administrator',
+            isVerified: true
+          };
+          db.users.push(user);
+        }
+      } catch (dbErr) {
+        console.warn('[Reset Password DB lookup warning]:', dbErr.message);
+      }
+    }
+
     if (!user) {
       return res.status(404).json({ error: 'User account not found.' });
     }
@@ -913,6 +999,16 @@ router.post('/reset-password', (req, res) => {
     const { salt, passwordHash } = hashPassword(newPassword);
     user.salt = salt;
     user.passwordHash = passwordHash;
+
+    // Persist to PostgreSQL if database connection is active
+    try {
+      await pgQuery(
+        'UPDATE users SET password_hash = $1, salt = $2, updated_at = NOW() WHERE id = $3 OR email = $4',
+        [passwordHash, salt, user.id, user.email]
+      );
+    } catch (pgErr) {
+      console.warn('[Reset Password PG update warning]:', pgErr.message);
+    }
 
     // Invalidate reset token
     tokenRecord.used = true;
@@ -926,6 +1022,11 @@ router.post('/reset-password', (req, res) => {
         revokedSessionsCount++;
       }
     }
+
+    // Also revoke sessions in PostgreSQL if sessions table is present
+    try {
+      await pgQuery('DELETE FROM sessions WHERE user_id = $1', [user.id]);
+    } catch (_) {}
 
     logAuditEvent({
       actor: user.email,
