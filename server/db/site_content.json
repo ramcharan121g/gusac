@@ -1,32 +1,56 @@
 {
   "topBar": {
-    "naacBadge": "NAAC A++ Accredited",
     "ugcText": "UGC Category-1 Deemed to be University",
-    "announcementText": "GITAM Visakhapatnam • Student Innovation & Research Hub Active",
-    "announcementActive": true,
     "campuses": [
       {
-        "name": "Visakhapatnam (Rushikonda Main)",
-        "tag": "Central Prototyping Bay & Arena"
+        "tag": "Central Prototyping Bay & Arena",
+        "name": "Visakhapatnam (Rushikonda Main)"
       },
       {
-        "name": "ICT Bhavan Prototyping Bay",
-        "tag": "3D Printing & Electronics Lab"
+        "tag": "3D Printing & Electronics Lab",
+        "name": "ICT Bhavan Prototyping Bay"
       },
       {
-        "name": "Beachside Aero Hangar 3",
-        "tag": "Fixed-Wing Flight Runway & UAVs"
+        "tag": "Fixed-Wing Flight Runway & UAVs",
+        "name": "Beachside Aero Hangar 3"
       },
       {
-        "name": "Science Tower Observatory",
-        "tag": "Rooftop Telemetry & Deep-Sky Dome"
+        "tag": "Rooftop Telemetry & Deep-Sky Dome",
+        "name": "Science Tower Observatory"
       }
-    ]
+    ],
+    "naacBadge": "NAAC A++ Accredited",
+    "announcementText": "GITAM Visakhapatnam • Student Innovation & Research Hub Active",
+    "announcementActive": true
   },
   "hero": {
+    "metrics": [
+      {
+        "sub": "Visakhapatnam Campus",
+        "color": "yellow",
+        "label": "Active Student Innovators",
+        "value": "1,200+"
+      },
+      {
+        "sub": "Govt. of India & AICTE",
+        "color": "emerald",
+        "label": "Hardware Projects & Patents",
+        "value": "50+"
+      },
+      {
+        "sub": "SIH, URC & Boeing Prix",
+        "color": "blue",
+        "label": "National Hackathon Grants Won",
+        "value": "₹5,00,000+"
+      },
+      {
+        "sub": "With Optical Tracking",
+        "color": "red",
+        "label": "24/7 Innovation Center Access",
+        "value": "24/7"
+      }
+    ],
     "tagline": "Visakhapatnam Student Innovation & Project Hub",
-    "headlineStart": "Empowering Student Innovators to Build",
-    "headlineHighlight": "Next-Gen Tech",
     "subtitle": "Join GITAM Visakhapatnam's central multi-disciplinary innovation hub. Build autonomous UAVs, URC Mars rovers, edge AI neural networks, and defensive cybersecurity systems with 24/7 access.",
     "uspBadges": [
       {
@@ -46,80 +70,56 @@
         "color": "#EF4444"
       }
     ],
-    "primaryBtnText": "Explore Student Projects",
-    "primaryBtnLink": "/projects",
-    "secondaryBtnText": "Events & Passes",
-    "secondaryBtnLink": "/events",
-    "metrics": [
-      {
-        "value": "1,200+",
-        "label": "Active Student Innovators",
-        "sub": "Visakhapatnam Campus",
-        "color": "yellow"
-      },
-      {
-        "value": "50+",
-        "label": "Hardware Projects & Patents",
-        "sub": "Govt. of India & AICTE",
-        "color": "emerald"
-      },
-      {
-        "value": "₹5,00,000+",
-        "label": "National Hackathon Grants Won",
-        "sub": "SIH, URC & Boeing Prix",
-        "color": "blue"
-      },
-      {
-        "value": "24/7",
-        "label": "24/7 Innovation Center Access",
-        "sub": "With Optical Tracking",
-        "color": "red"
-      }
-    ],
+    "headlineStart": "Empowering Student Innovators to Build",
     "membershipCard": {
       "badge": "GUSAC VISAKHAPATNAM COMMUNITY",
       "title": "Join Innovation Hub",
       "freePill": "100% Free",
-      "submitButtonText": "Register for GUSAC Membership",
-      "disclaimerText": "By submitting, you agree to GUSAC community guidelines and student code of conduct."
-    }
+      "disclaimerText": "By submitting, you agree to GUSAC community guidelines and student code of conduct.",
+      "submitButtonText": "Register for GUSAC Membership"
+    },
+    "primaryBtnLink": "/projects",
+    "primaryBtnText": "Explore Student Projects",
+    "secondaryBtnLink": "/events",
+    "secondaryBtnText": "Events & Passes",
+    "headlineHighlight": "Next-Gen Tech"
   },
   "introVideo": {
     "badge": "GUSAC Experience & Lab Tour",
-    "titleStart": "Inside GITAM's Flagship",
-    "titleHighlight": "Innovation Hub",
-    "subtitle": "Take a 3-minute video journey through our ₹50+ Cr research facilities, autonomous robotics bays, drone flight grounds, and 24/7 student innovation hubs.",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=80",
-    "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     "reelTag": "4K UHD INTRO REEL",
-    "centerTag": "GUSAC Innovation Hub",
-    "duration": "03:45 DURATION",
-    "soundTag": "SURROUND AUDIO",
     "chapters": [
       {
-        "time": "00:15",
         "tag": "Aero",
+        "time": "00:15",
         "title": "1. Autonomous UAV Flight Strip"
       },
       {
-        "time": "01:05",
         "tag": "Robotics",
+        "time": "01:05",
         "title": "2. Mars Rover Obstacle Sandpit"
       },
       {
-        "time": "01:50",
         "tag": "Space",
+        "time": "01:50",
         "title": "3. Ground Station & Telescope"
       },
       {
-        "time": "02:40",
         "tag": "Prototyping",
+        "time": "02:40",
         "title": "4. High-Precision PCB Lab"
       }
     ],
+    "duration": "03:45 DURATION",
+    "soundTag": "SURROUND AUDIO",
+    "subtitle": "Take a 3-minute video journey through our ₹50+ Cr research facilities, autonomous robotics bays, drone flight grounds, and 24/7 student innovation hubs.",
+    "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "centerTag": "GUSAC Innovation Hub",
     "ctaPrompt": "Want to work on these autonomous projects with 24/7 keycard access?",
+    "ctaBtnLink": "/projects",
     "ctaBtnText": "Explore Projects",
-    "ctaBtnLink": "/projects"
+    "titleStart": "Inside GITAM's Flagship",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=80",
+    "titleHighlight": "Innovation Hub"
   },
   "featuredProjectsHeading": {
     "badge": "Open Innovation Showcase",
@@ -133,171 +133,171 @@
     "facilities": [
       {
         "id": "central-labs",
-        "name": "GUSAC Central Arena & Prototyping Center",
-        "building": "ICT Bhavan Ground & 1st Floor",
         "desc": "Central multipurpose project bay, 3D printers, laser cutters, electronics benches & PCB prototyping.",
+        "name": "GUSAC Central Arena & Prototyping Center",
+        "badge": "Main Hub",
         "color": "border-yellow-500/50 text-yellow-400",
-        "badge": "Main Hub"
+        "building": "ICT Bhavan Ground & 1st Floor"
       },
       {
         "id": "hangar-3",
-        "name": "Aeromodelling & Flight Hangar 3",
-        "building": "University Tech Park & Beachside Runway",
         "desc": "Fixed-wing carbon fiber fabrication, PX4 autopilot testing, and autonomous drone landing strips.",
+        "name": "Aeromodelling & Flight Hangar 3",
+        "badge": "Aero Labs",
         "color": "border-blue-500/50 text-blue-400",
-        "badge": "Aero Labs"
+        "building": "University Tech Park & Beachside Runway"
       },
       {
         "id": "robotics-bay",
-        "name": "Robotics Bay 1 & AI Computing Hub",
-        "building": "Engineering Block 4, Room 402",
         "desc": "Mars rover test sandpit, ROS2 simulation computers, Jetson edge AI vision cluster, and inverted pendulum testing.",
+        "name": "Robotics Bay 1 & AI Computing Hub",
+        "badge": "Robotics & AI",
         "color": "border-emerald-500/50 text-emerald-400",
-        "badge": "Robotics & AI"
+        "building": "Engineering Block 4, Room 402"
       },
       {
         "id": "observatory",
-        "name": "Rooftop Astronomical Observatory",
-        "building": "Science Tower Rooftop Dome",
         "desc": "14-inch Schmidt-Cassegrain telescope, radio astronomy telemetry dish, and night-sky astrophotography base.",
+        "name": "Rooftop Astronomical Observatory",
+        "badge": "Space Tech",
         "color": "border-indigo-500/50 text-indigo-400",
-        "badge": "Space Tech"
+        "building": "Science Tower Rooftop Dome"
       }
     ],
-    "officePhone": "+91 (891) 2840501",
     "officeEmail": "gusac@gitam.edu",
-    "officeHours": "24/7 RFID Card Access (Mon - Sun)"
+    "officeHours": "24/7 RFID Card Access (Mon - Sun)",
+    "officePhone": "+91 (891) 2840501"
   },
   "about": {
     "badge": "About GUSAC GITAM",
-    "title": "Empowering Next-Generation Tech Leaders Since 2011",
-    "description": "GUSAC (GITAM University Science and Activity Center) is an autonomous student innovation body incubating groundbreaking projects across aerospace, robotics, cybersecurity, space sciences, and IoT. With 24/7 keycard lab access, ₹50+ Cr in specialized prototyping machinery, and alumni at ISRO, Boeing, Google, and NASA.",
-    "stats": [
-      {
-        "label": "Active Members",
-        "value": "1,250+",
-        "color": "white"
-      },
-      {
-        "label": "Provisional Patents",
-        "value": "24 Filed",
-        "color": "yellow-400"
-      },
-      {
-        "label": "Startup Incubations",
-        "value": "12 Funded",
-        "color": "emerald-400"
-      }
-    ],
     "email": "gusac@gitam.edu",
     "phone": "+91 (891) 2840501",
+    "stats": [
+      {
+        "color": "white",
+        "label": "Active Members",
+        "value": "1,250+"
+      },
+      {
+        "color": "yellow-400",
+        "label": "Provisional Patents",
+        "value": "24 Filed"
+      },
+      {
+        "color": "emerald-400",
+        "label": "Startup Incubations",
+        "value": "12 Funded"
+      }
+    ],
+    "title": "Empowering Next-Generation Tech Leaders Since 2011",
+    "description": "GUSAC (GITAM University Science and Activity Center) is an autonomous student innovation body incubating groundbreaking projects across aerospace, robotics, cybersecurity, space sciences, and IoT. With 24/7 keycard lab access, ₹50+ Cr in specialized prototyping machinery, and alumni at ISRO, Boeing, Google, and NASA.",
     "socialLinks": {
-      "instagram": "https://instagram.com",
-      "linkedin": "https://linkedin.com",
+      "github": "https://github.com",
       "youtube": "https://youtube.com",
-      "github": "https://github.com"
+      "linkedin": "https://linkedin.com",
+      "instagram": "https://instagram.com"
     }
   },
   "faq": {
     "badge": "Frequently Asked Questions",
-    "title": "Everything You Need to Know About GUSAC",
-    "contactNotice": "Have more questions? Reach out to our student council at gusac@gitam.edu",
-    "ctaText": "Ready to join? Register for GUSAC Community & Events →",
-    "ctaLink": "/register",
     "items": [
       {
-        "q": "Who is eligible to join GUSAC and build projects?",
-        "a": "All undergraduate, postgraduate, and PhD students from ANY department (CSE, ECE, Aerospace, Mechanical, Civil, Biotechnology, etc.) at GITAM are eligible. Prior hardware or coding experience is NOT mandatory for 1st-year students — passion and curiosity matter most!"
+        "a": "All undergraduate, postgraduate, and PhD students from ANY department (CSE, ECE, Aerospace, Mechanical, Civil, Biotechnology, etc.) at GITAM are eligible. Prior hardware or coding experience is NOT mandatory for 1st-year students — passion and curiosity matter most!",
+        "q": "Who is eligible to join GUSAC and build projects?"
       },
       {
-        "q": "How do student teams get funding and components for hardware projects?",
-        "a": "Once you submit your project idea on the portal and it gets approved by the technical council, you can request direct component checkout (NVIDIA Jetson, Pixhawk, LiDARs, 3D printers) from the GUSAC hardware inventory, funded by university R&D grants."
+        "a": "Once you submit your project idea on the portal and it gets approved by the technical council, you can request direct component checkout (NVIDIA Jetson, Pixhawk, LiDARs, 3D printers) from the GUSAC hardware inventory, funded by university R&D grants.",
+        "q": "How do student teams get funding and components for hardware projects?"
       },
       {
-        "q": "How do I get 24/7 keycard access to GUSAC prototyping centers?",
-        "a": "Active student members working on registered innovation projects or national competitions (Smart India Hackathon, URC, Boeing Aero Prix) are granted RFID student badge access for 24/7 facility entry after safety onboarding."
+        "a": "Active student members working on registered innovation projects or national competitions (Smart India Hackathon, URC, Boeing Aero Prix) are granted RFID student badge access for 24/7 facility entry after safety onboarding.",
+        "q": "How do I get 24/7 keycard access to GUSAC prototyping centers?"
       },
       {
-        "q": "How can I participate in GUSAC hackathons and workshops?",
-        "a": "All active fests, workshops, and hackathons are listed under the Events page. You can register directly with your student credentials or as an external participant to get a verified digital pass with instant QR verification."
+        "a": "All active fests, workshops, and hackathons are listed under the Events page. You can register directly with your student credentials or as an external participant to get a verified digital pass with instant QR verification.",
+        "q": "How can I participate in GUSAC hackathons and workshops?"
       },
       {
-        "q": "Can I collaborate across multiple technical domains (e.g. AI + Robotics)?",
-        "a": "Yes! GUSAC thrives on multidisciplinary collaboration. Many projects (like the Astra Planetary Rover or Garuda-X VTOL) involve members combining Robotics, Embedded IoT, and Edge AI."
+        "a": "Yes! GUSAC thrives on multidisciplinary collaboration. Many projects (like the Astra Planetary Rover or Garuda-X VTOL) involve members combining Robotics, Embedded IoT, and Edge AI.",
+        "q": "Can I collaborate across multiple technical domains (e.g. AI + Robotics)?"
       }
-    ]
+    ],
+    "title": "Everything You Need to Know About GUSAC",
+    "ctaLink": "/register",
+    "ctaText": "Ready to join? Register for GUSAC Community & Events →",
+    "contactNotice": "Have more questions? Reach out to our student council at gusac@gitam.edu"
   },
   "council": [
     {
       "id": "c_01",
+      "bio": "Team Lead for the Astra Planetary Rover. 2x SIH Winner, published researcher in autonomous SLAM navigation and inverse kinematics.",
       "name": "Aarav Sharma",
       "role": "President & Technical Director",
       "wing": "Robotics & Automation",
       "year": "Final Year B.Tech CSE",
-      "bio": "Team Lead for the Astra Planetary Rover. 2x SIH Winner, published researcher in autonomous SLAM navigation and inverse kinematics.",
-      "avatarLetter": "A",
       "badges": [
         "SIH Winner",
         "URC Lead",
         "ROS2 Pro"
       ],
+      "github": "https://github.com",
       "linkedin": "https://linkedin.com",
-      "github": "https://github.com"
+      "avatarLetter": "A"
     },
     {
       "id": "c_02",
+      "bio": "Chief designer for Garuda-X hybrid VTOL. Certified UAV remote pilot and composite airframe manufacturing specialist.",
       "name": "Sneha Reddy",
       "role": "Vice President & Aero Lead",
       "wing": "Aeromodelling & UAVs",
       "year": "3rd Year Aerospace",
-      "bio": "Chief designer for Garuda-X hybrid VTOL. Certified UAV remote pilot and composite airframe manufacturing specialist.",
-      "avatarLetter": "S",
       "badges": [
         "Boeing Prix",
         "PX4 Firmware",
         "VTOL Lead"
       ],
+      "github": "https://github.com",
       "linkedin": "https://linkedin.com",
-      "github": "https://github.com"
+      "avatarLetter": "S"
     },
     {
       "id": "c_03",
+      "bio": "Zero-Trust security architect. OWASP ASVS compliance researcher and top 100 CTF player globally.",
       "name": "Vikram Nair",
       "role": "CyberSecurity & Systems Lead",
       "wing": "Web & CyberSecurity",
       "year": "4th Year IT",
-      "bio": "Zero-Trust security architect. OWASP ASVS compliance researcher and top 100 CTF player globally.",
-      "avatarLetter": "V",
       "badges": [
         "ASVS Lead",
         "CTF Top 100",
         "Zero-Trust"
       ],
+      "github": "https://github.com",
       "linkedin": "https://linkedin.com",
-      "github": "https://github.com"
+      "avatarLetter": "V"
     },
     {
       "id": "c_04",
+      "bio": "Specializing in computer vision on edge Jetson hardware. Created campus navigation neural network with 98.4% accuracy.",
       "name": "Ananya Roy",
       "role": "AI & Data Science Lead",
       "wing": "AI & Machine Learning",
       "year": "3rd Year AI/ML",
-      "bio": "Specializing in computer vision on edge Jetson hardware. Created campus navigation neural network with 98.4% accuracy.",
-      "avatarLetter": "A",
       "badges": [
         "Edge AI",
         "PyTorch",
         "NVIDIA Grant"
       ],
+      "github": "https://github.com",
       "linkedin": "https://linkedin.com",
-      "github": "https://github.com"
+      "avatarLetter": "A"
     }
   ],
   "footer": {
-    "brandDescription": "GUSAC (GITAM University Science and Activity Center) is the premier student innovation ecosystem, incubating autonomous robotics, UAV aeromodelling, deep AI, space science, and next-generation cybersecurity.",
-    "securityBadge": "OWASP ASVS 4.0 Level 2 Verified Architecture",
-    "address": "GUSAC Central Labs, GITAM Deemed to be University, Visakhapatnam, AP, India",
     "email": "gusac@gitam.edu",
-    "copyright": "© 2026 GUSAC — GITAM University Science and Activity Center. All rights reserved."
+    "address": "GUSAC Central Labs, GITAM Deemed to be University, Visakhapatnam, AP, India",
+    "copyright": "© 2026 GUSAC — GITAM University Science and Activity Center. All rights reserved.",
+    "securityBadge": "OWASP ASVS 4.0 Level 2 Verified Architecture",
+    "brandDescription": "GUSAC (GITAM University Science and Activity Center) is the premier student innovation ecosystem, incubating autonomous robotics, UAV aeromodelling, deep AI, space science, and next-generation cybersecurity."
   }
 }
