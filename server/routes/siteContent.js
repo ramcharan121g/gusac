@@ -5,6 +5,7 @@ const router = express.Router();
 
 // GET /api/site-content - Public endpoint to retrieve current dynamic website content
 router.get('/', (req, res) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.json({
     siteContent: db.siteContent,
     lastUpdated: new Date().toISOString()

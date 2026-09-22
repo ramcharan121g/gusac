@@ -1,5 +1,5 @@
 import express from 'express';
-import { db, getDefaultSiteContent } from '../db.js';
+import { db, getDefaultSiteContent, savePersistentSiteContent } from '../db.js';
 import { authenticateToken, requireAuth, requireRole, requireAdminMfa, requireReAuth } from '../middleware.js';
 import { logAuditEvent, sanitizeInput, generateMfaSecret } from '../security.js';
 import { sendLeadershipDecisionEmail } from '../services/emailService.js';
@@ -389,6 +389,10 @@ router.delete('/events/:id', (req, res) => {
 
   const removed = db.events.splice(index, 1)[0];
 
+  pgQuery('DELETE FROM events WHERE id = $1', [id]).catch((e) =>
+    console.warn('[PG Event Delete Warning]:', e.message)
+  );
+
   logAuditEvent({
     actor: req.user.email,
     actorRole: req.user.role,
@@ -411,6 +415,10 @@ router.post('/events/:id/toggle-status', (req, res) => {
   }
 
   event.status = event.status === 'past' ? 'upcoming' : 'past';
+
+  pgQuery('UPDATE events SET is_active = $1 WHERE id = $2', [event.status === 'upcoming', id]).catch((e) =>
+    console.warn('[PG Event Toggle Warning]:', e.message)
+  );
 
   logAuditEvent({
     actor: req.user.email,
@@ -448,6 +456,19 @@ router.put('/site-content', (req, res) => {
     ...siteContent
   };
 
+  savePersistentSiteContent(db.siteContent);
+
+  pgQuery(
+    `CREATE TABLE IF NOT EXISTS site_settings (key VARCHAR(64) PRIMARY KEY, value JSONB NOT NULL, updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP)`
+  ).then(() => {
+    return pgQuery(
+      `INSERT INTO site_settings (key, value, updated_at) 
+       VALUES ('site_content', $1, CURRENT_TIMESTAMP) 
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+      [JSON.stringify(db.siteContent)]
+    );
+  }).catch((e) => console.warn('[PG SiteContent Save Warning]:', e.message));
+
   logAuditEvent({
     actor: req.user.email,
     actorRole: req.user.role,
@@ -466,6 +487,14 @@ router.put('/site-content', (req, res) => {
 
 router.post('/site-content/reset', (req, res) => {
   db.siteContent = getDefaultSiteContent();
+  savePersistentSiteContent(db.siteContent);
+
+  pgQuery(
+    `INSERT INTO site_settings (key, value, updated_at) 
+     VALUES ('site_content', $1, CURRENT_TIMESTAMP) 
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+    [JSON.stringify(db.siteContent)]
+  ).catch((e) => console.warn('[PG SiteContent Reset Warning]:', e.message));
 
   logAuditEvent({
     actor: req.user.email,

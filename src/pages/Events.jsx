@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { subscribeToUpdates } from '../utils/sync';
 import { Link } from 'react-router-dom';
 import DigitalPassModal from '../components/DigitalPassModal';
 import PaymentModal from '../components/PaymentModal';
@@ -43,6 +44,20 @@ export default function Events() {
 
   useEffect(() => {
     fetchEvents();
+
+    const unsubscribe = subscribeToUpdates((ev) => {
+      if (['EVENTS_UPDATED', 'PASSES_UPDATED'].includes(ev.type)) {
+        fetchEvents();
+      }
+    });
+
+    const handleFocus = () => fetchEvents();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchEvents = async () => {

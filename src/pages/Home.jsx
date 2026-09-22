@@ -8,6 +8,7 @@ import StudentStories from '../components/StudentStories';
 import ClubFaq from '../components/ClubFaq';
 import { Button } from '@/components/ui/button';
 import { useSiteContent } from '../context/SiteContentContext';
+import { subscribeToUpdates } from '../utils/sync';
 import {
   Rocket,
   ShieldCheck,
@@ -54,6 +55,21 @@ export default function Home() {
 
   useEffect(() => {
     fetchHomeData();
+
+    // Real-time synchronization whenever changes are made in Admin
+    const unsubscribe = subscribeToUpdates((ev) => {
+      if (['EVENTS_UPDATED', 'PROJECTS_UPDATED', 'SITE_CONTENT_UPDATED'].includes(ev.type)) {
+        fetchHomeData();
+      }
+    });
+
+    const handleFocus = () => fetchHomeData();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchHomeData = async () => {

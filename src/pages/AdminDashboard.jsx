@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../utils/api';
+import { broadcastUpdate } from '../utils/sync';
 import QrAttendanceScanner from '../components/QrAttendanceScanner';
 import SiteContentEditor from '../components/SiteContentEditor';
 import {
@@ -174,6 +175,7 @@ export default function AdminDashboard() {
         });
         setActionNotice(res.message);
         fetchAdminData();
+        broadcastUpdate('USER_UPDATED');
       }
     );
   };
@@ -192,6 +194,7 @@ export default function AdminDashboard() {
         });
         setActionNotice(res.message);
         fetchAdminData();
+        broadcastUpdate('USER_UPDATED');
       }
     );
   };
@@ -231,6 +234,7 @@ export default function AdminDashboard() {
       });
       setActionNotice(res.message);
       fetchAdminData();
+      broadcastUpdate('PROJECTS_UPDATED');
     } catch (err) {
       alert(err.message || 'Failed to update status');
     }
@@ -261,6 +265,7 @@ export default function AdminDashboard() {
         videoUrl: ''
       });
       fetchAdminData();
+      broadcastUpdate('EVENTS_UPDATED');
     } catch (err) {
       alert(err.message || 'Failed to create event');
     }
@@ -273,6 +278,7 @@ export default function AdminDashboard() {
       const res = await apiRequest(`/admin/events/${eventId}`, { method: 'DELETE' });
       setActionNotice(res.message);
       fetchAdminData();
+      broadcastUpdate('EVENTS_UPDATED');
     } catch (err) {
       alert(err.message || 'Failed to delete event');
     }
@@ -284,6 +290,7 @@ export default function AdminDashboard() {
       const res = await apiRequest(`/admin/events/${eventId}/toggle-status`, { method: 'POST' });
       setActionNotice(res.message);
       fetchAdminData();
+      broadcastUpdate('EVENTS_UPDATED');
     } catch (err) {
       alert(err.message || 'Failed to toggle event status');
     }
@@ -304,6 +311,7 @@ export default function AdminDashboard() {
       });
       setActionNotice(res.message);
       fetchAdminData();
+      broadcastUpdate('USER_UPDATED');
     } catch (err) {
       alert(err.message || 'Failed to process leadership decision');
     }

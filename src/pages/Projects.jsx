@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { subscribeToUpdates } from '../utils/sync';
 import {
   FolderGit2,
   Search,
@@ -53,6 +54,21 @@ export default function Projects() {
   useEffect(() => {
     fetchProjects();
   }, [selectedWing, searchQuery]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToUpdates((ev) => {
+      if (['PROJECTS_UPDATED'].includes(ev.type)) {
+        fetchProjects();
+      }
+    });
+    const handleFocus = () => fetchProjects();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
 
   const fetchProjects = async () => {
     setLoading(true);

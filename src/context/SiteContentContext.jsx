@@ -211,20 +211,45 @@ export const FALLBACK_SITE_CONTENT = {
   }
 };
 
+import { broadcastUpdate, subscribeToUpdates } from '../utils/sync';
+
 const SiteContentContext = createContext(null);
 
 export function SiteContentProvider({ children }) {
-  const [siteContent, setSiteContent] = useState(FALLBACK_SITE_CONTENT);
+  const [siteContent, setSiteContent] = useState(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const cached = localStorage.getItem('gusac_site_content');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && typeof parsed === 'object') {
+            return { ...FALLBACK_SITE_CONTENT, ...parsed };
+          }
+        }
+      }
+    } catch (e) {
+      // ignore JSON parse or storage errors
+    }
+    return FALLBACK_SITE_CONTENT;
+  });
   const [loading, setLoading] = useState(true);
 
   const fetchSiteContent = async () => {
     try {
       const data = await apiRequest('/site-content');
       if (data?.siteContent) {
-        setSiteContent((prev) => ({
-          ...prev,
-          ...data.siteContent
-        }));
+        setSiteContent((prev) => {
+          const merged = {
+            ...prev,
+            ...data.siteContent
+          };
+          try {
+            if (typeof window !== 'undefined' && window.localStorage) {
+              localStorage.setItem('gusac_site_content', JSON.stringify(merged));
+            }
+          } catch (e) {}
+          return merged;
+        });
       }
     } catch (e) {
       console.warn('Using local fallback site content:', e.message);
@@ -234,7 +259,38 @@ export function SiteContentProvider({ children }) {
   };
 
   useEffect(() => {
+    // 1. Initial server fetch
     fetchSiteContent();
+
+    // 2. Real-time subscription to admin updates across tabs/windows
+    const unsubscribe = subscribeToUpdates((event) => {
+      if (event.type === 'SITE_CONTENT_UPDATED' && event.payload) {
+        setSiteContent((prev) => ({
+          ...prev,
+          ...event.payload
+        }));
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem('gusac_site_content', JSON.stringify(event.payload));
+          }
+        } catch (e) {}
+      }
+    });
+
+    // 3. Re-validate on tab focus (when user switches back to this tab)
+    const handleFocus = () => {
+      fetchSiteContent();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    // 4. Background polling every 12 seconds for seamless multi-device updates
+    const intervalId = setInterval(fetchSiteContent, 12000);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(intervalId);
+    };
   }, []);
 
   const saveSiteContent = async (updatedContent) => {
@@ -245,6 +301,13 @@ export function SiteContentProvider({ children }) {
       });
       if (res?.siteContent) {
         setSiteContent(res.siteContent);
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem('gusac_site_content', JSON.stringify(res.siteContent));
+          }
+        } catch (e) {}
+        // Broadcast to user panel and all other open tabs immediately!
+        broadcastUpdate('SITE_CONTENT_UPDATED', res.siteContent);
       }
       return { success: true, message: res.message || 'Content updated successfully' };
     } catch (err) {
@@ -259,6 +322,13 @@ export function SiteContentProvider({ children }) {
       });
       if (res?.siteContent) {
         setSiteContent(res.siteContent);
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem('gusac_site_content', JSON.stringify(res.siteContent));
+          }
+        } catch (e) {}
+        // Broadcast reset to user panel
+        broadcastUpdate('SITE_CONTENT_UPDATED', res.siteContent);
       }
       return { success: true, message: res.message || 'Content reset successfully' };
     } catch (err) {

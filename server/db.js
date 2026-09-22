@@ -1,4 +1,11 @@
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SITE_CONTENT_FILE = path.join(__dirname, 'db', 'site_content.json');
 
 // In-memory persistent state store for GUSAC database
 export const db = {
@@ -801,8 +808,34 @@ export const db = {
     }
   ],
 
-  siteContent: getDefaultSiteContent()
+  siteContent: loadPersistentSiteContent()
 };
+
+export function loadPersistentSiteContent() {
+  try {
+    if (fs.existsSync(SITE_CONTENT_FILE)) {
+      const raw = fs.readFileSync(SITE_CONTENT_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return {
+          ...getDefaultSiteContent(),
+          ...parsed
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[SiteContent Load Warning]:', err.message);
+  }
+  return getDefaultSiteContent();
+}
+
+export function savePersistentSiteContent(content) {
+  try {
+    fs.writeFileSync(SITE_CONTENT_FILE, JSON.stringify(content, null, 2), 'utf8');
+  } catch (err) {
+    console.error('[SiteContent Save Error]:', err.message);
+  }
+}
 
 export function getDefaultSiteContent() {
   return {

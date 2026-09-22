@@ -17,6 +17,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { apiRequest } from '../utils/api';
+import { broadcastUpdate } from '../utils/sync';
 import confetti from 'canvas-confetti';
 
 export default function QrAttendanceScanner() {
@@ -74,6 +75,7 @@ export default function QrAttendanceScanner() {
       }
 
       fetchEventsAndPasses();
+      broadcastUpdate('PASSES_UPDATED');
     } catch (err) {
       setScanResult({
         status: 'ERROR',
@@ -92,6 +94,7 @@ export default function QrAttendanceScanner() {
         body: { registrationId, checkedIn: !currentStatus }
       });
       fetchEventsAndPasses();
+      broadcastUpdate('PASSES_UPDATED');
     } catch (err) {
       alert(err.message || 'Failed to toggle attendance status.');
     }

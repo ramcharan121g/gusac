@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../utils/api';
+import { subscribeToUpdates } from '../utils/sync';
 import MfaModal from '../components/MfaModal';
 import QRCode from 'qrcode';
 import GusacLogo3D from '../components/GusacLogo3D';
@@ -39,6 +40,27 @@ export default function Dashboard() {
       fetchUserDashboardData();
       generateIdBadgeQr();
     }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = subscribeToUpdates((ev) => {
+      if (['EVENTS_UPDATED', 'PROJECTS_UPDATED', 'PASSES_UPDATED', 'USER_UPDATED'].includes(ev.type)) {
+        fetchUserDashboardData();
+        checkAuth();
+      }
+    });
+
+    const handleFocus = () => {
+      fetchUserDashboardData();
+      checkAuth();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [user]);
 
   const generateIdBadgeQr = async () => {

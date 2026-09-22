@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../utils/api';
 import { useSiteContent } from '../context/SiteContentContext';
+import { subscribeToUpdates } from '../utils/sync';
 import {
   Award,
   Users,
@@ -24,6 +25,20 @@ export default function Team() {
 
   useEffect(() => {
     fetchTeamData();
+
+    const unsubscribe = subscribeToUpdates((ev) => {
+      if (['USER_UPDATED', 'SITE_CONTENT_UPDATED'].includes(ev.type)) {
+        fetchTeamData();
+      }
+    });
+
+    const handleFocus = () => fetchTeamData();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchTeamData = async () => {
