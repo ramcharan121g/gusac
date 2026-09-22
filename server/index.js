@@ -116,6 +116,19 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
+// Strict rate limiter for Email OTP dispatch (protects Brevo SMTP quota & prevents email bombing)
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 6, // Limit each IP to 6 OTP sends per 10 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too Many Requests',
+    message: 'OTP dispatch limit reached. Please wait 10 minutes before requesting more codes.'
+  }
+});
+app.use('/api/auth/send-otp', otpLimiter);
+
 // Stricter rate limiter for Authentication endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -130,6 +143,10 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
+app.use('/api/auth/verify-otp', authLimiter);
+app.use('/api/auth/mfa/verify', authLimiter);
+app.use('/api/auth/sso-login', authLimiter);
 
 // ==========================================
 // 4. Mount API Routes

@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import { db } from '../db.js';
 import {
   hashPassword,
@@ -58,14 +59,28 @@ router.post('/send-otp', async (req, res) => {
       return res.status(409).json({ error: 'An account with this email address already exists. Please sign in.' });
     }
 
-    // Generate 6-digit cryptographically random OTP
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    // Anti-Spam / DoS: Enforce 60-second cooldown per email
+    const existingOtp = db.otpStore.get(email);
+    if (existingOtp && existingOtp.createdAt) {
+      const elapsedMs = Date.now() - new Date(existingOtp.createdAt).getTime();
+      if (elapsedMs < 60 * 1000) {
+        const remainingSeconds = Math.ceil((60 * 1000 - elapsedMs) / 1000);
+        return res.status(429).json({
+          error: 'Too Many Requests',
+          message: `Please wait ${remainingSeconds} seconds before requesting a new verification code.`
+        });
+      }
+    }
+
+    // Generate 6-digit cryptographically random OTP (CSPRNG)
+    const otpCode = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
 
     db.otpStore.set(email, {
       otpCode,
       expiresAt,
       verified: false,
+      attempts: 0,
       createdAt: new Date().toISOString()
     });
 
@@ -74,7 +89,7 @@ router.post('/send-otp', async (req, res) => {
       action: 'EMAIL_OTP_DISPATCHED',
       ip: req.ip,
       status: 'DISPATCHED',
-      details: `6-digit email OTP generated for ${userType || 'student'} registration. Code expires in 10 minutes.`,
+      details: `Cryptographically secure 6-digit email OTP generated for ${userType || 'student'} registration. Expires in 10 minutes.`,
       securityLevel: 'LOW'
     });
 
@@ -136,16 +151,35 @@ router.post('/verify-otp', (req, res) => {
       return res.status(400).json({ error: 'OTP has expired. Please request a new verification code.' });
     }
 
+    // Brute-force protection: Max 5 failed attempts per OTP
+    record.attempts = (record.attempts || 0) + 1;
+    if (record.attempts > 5) {
+      db.otpStore.delete(email);
+      logAuditEvent({
+        actor: email,
+        action: 'EMAIL_OTP_BRUTE_FORCE_BLOCKED',
+        ip: req.ip,
+        status: 'BLOCKED',
+        details: `Exceeded maximum verification attempts (5) for ${email}. OTP invalidated for security.`,
+        securityLevel: 'HIGH'
+      });
+      return res.status(429).json({
+        error: 'Too many incorrect attempts. This OTP has been invalidated for security. Please request a new code.'
+      });
+    }
+
     if (record.otpCode !== otp) {
       logAuditEvent({
         actor: email,
         action: 'EMAIL_OTP_VERIFY_FAILURE',
         ip: req.ip,
         status: 'FAILED',
-        details: `Incorrect OTP entered for email verification: ${email}`,
+        details: `Incorrect OTP entered for email verification: ${email} (Attempt ${record.attempts}/5)`,
         securityLevel: 'MEDIUM'
       });
-      return res.status(400).json({ error: 'Invalid verification code. Please check and try again.' });
+      return res.status(400).json({
+        error: `Invalid verification code. (${5 - record.attempts} attempt${5 - record.attempts === 1 ? '' : 's'} remaining).`
+      });
     }
 
     record.verified = true;
@@ -529,6 +563,40 @@ router.post('/sso-login', async (req, res) => {
     // Find existing account or auto-provision student account
     let user = db.users.find((u) => u.email === cleanEmail);
 
+    // SECURITY: Administrative & privileged accounts CANNOT be bypassed via SSO endpoint
+    if (user && (user.role === 'admin' || user.role === 'mentor' || user.mfaEnabled)) {
+      logAuditEvent({
+        actor: cleanEmail,
+        actorRole: user.role,
+        action: 'SSO_PRIVILEGE_BYPASS_BLOCKED',
+        ip: req.ip,
+        status: 'BLOCKED',
+        details: `Blocked attempt to bypass password & MFA for privileged account (${cleanEmail}) via /sso-login.`,
+        securityLevel: 'CRITICAL'
+      });
+      return res.status(403).json({
+        error: 'Privileged Account Authentication Required',
+        message: 'Administrative and privileged accounts must authenticate via secure credentials and Multi-Factor Authentication.'
+      });
+    }
+
+    // SECURITY: If account exists with password credentials, prevent unverified takeover
+    if (user && user.passwordHash && user.passwordHash !== 'sso_authenticated_argon2id') {
+      logAuditEvent({
+        actor: cleanEmail,
+        actorRole: user.role,
+        action: 'SSO_ACCOUNT_TAKEOVER_PREVENTED',
+        ip: req.ip,
+        status: 'BLOCKED',
+        details: `Blocked unverified SSO takeover attempt for registered password account (${cleanEmail}).`,
+        securityLevel: 'HIGH'
+      });
+      return res.status(409).json({
+        error: 'Account Already Exists',
+        message: 'An account with a password already exists for this email. Please sign in using your email and password.'
+      });
+    }
+
     if (!user) {
       const parsedName = name ? sanitizeInput(name.trim()) : cleanEmail.split('@')[0].replace(/[._]/g, ' ');
       const firstName = parsedName.split(' ')[0] || 'Innovator';
@@ -725,12 +793,12 @@ router.post('/mfa/setup', authenticateToken, requireAuth, (req, res) => {
   try {
     const secret = generateMfaSecret();
     const otpauthUrl = `otpauth://totp/GUSAC%20GITAM:${encodeURIComponent(req.user.email)}?secret=${secret}&issuer=GUSAC%20GITAM&algorithm=SHA1&digits=6&period=30`;
-    const sampleCode = generateTotp(secret);
+    const sampleCode = process.env.NODE_ENV !== 'production' ? generateTotp(secret) : undefined;
 
     res.json({
       secret,
       otpauthUrl,
-      sampleCode,
+      ...(sampleCode ? { sampleCode } : {}),
       message: 'Scan the QR code with Google Authenticator, Authy, or Microsoft Authenticator.'
     });
   } catch (err) {

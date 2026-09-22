@@ -5,8 +5,8 @@ import { hashPassword, hashToken, verifyTotp } from '../security.js';
 
 const router = express.Router();
 
-// Get audit logs (Admins get all, general gets safe summaries)
-router.get('/', authenticateToken, (req, res) => {
+// Get audit logs (Admins get all, authenticated users get safe summaries)
+router.get('/', authenticateToken, requireAuth, (req, res) => {
   const { limit = 50, filter } = req.query;
   let logs = [...db.auditLogs];
 

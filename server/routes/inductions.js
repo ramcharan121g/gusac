@@ -1,5 +1,6 @@
 import express from 'express';
 import { db } from '../db.js';
+import { authenticateToken } from '../middleware.js';
 import { logAuditEvent, sanitizeInput } from '../security.js';
 
 const router = express.Router();
@@ -71,9 +72,19 @@ router.post('/apply', (req, res) => {
 });
 
 // Submit Leadership / Wing Lead application
-router.post('/apply-lead', async (req, res) => {
+router.post('/apply-lead', authenticateToken, async (req, res) => {
   try {
     let { userId, name, email, studentId, requestedRole, targetWing, statementOfPurpose } = req.body;
+
+    // Secure identity binding: If authenticated, enforce real verified user credentials
+    if (req.user) {
+      userId = req.user.id;
+      name = req.user.name || name;
+      email = req.user.email || email;
+      studentId = req.user.studentId || studentId;
+    } else {
+      userId = null; // Unauthenticated submissions cannot claim arbitrary user IDs
+    }
 
     name = sanitizeInput(name);
     email = sanitizeInput(email?.toLowerCase());

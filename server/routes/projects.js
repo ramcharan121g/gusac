@@ -100,14 +100,24 @@ router.post('/', authenticateToken, requireAuth, (req, res) => {
   }
 });
 
-// Star/Vote on a project
-router.post('/:id/star', authenticateToken, (req, res) => {
+// Star/Vote on a project (Requires Auth & Single Vote per User)
+router.post('/:id/star', authenticateToken, requireAuth, (req, res) => {
   const project = db.projects.find((p) => p.id === req.params.id);
   if (!project) {
     return res.status(404).json({ error: 'Project not found' });
   }
-  project.stars = (project.stars || 0) + 1;
-  res.json({ stars: project.stars, message: 'Starred!' });
+  project.starredBy = project.starredBy || [];
+  const alreadyStarred = project.starredBy.includes(req.user.id);
+
+  if (alreadyStarred) {
+    project.starredBy = project.starredBy.filter((uid) => uid !== req.user.id);
+    project.stars = Math.max(0, (project.stars || 1) - 1);
+    return res.json({ stars: project.stars, starred: false, message: 'Removed star from project.' });
+  } else {
+    project.starredBy.push(req.user.id);
+    project.stars = (project.stars || 0) + 1;
+    return res.json({ stars: project.stars, starred: true, message: 'Starred project successfully!' });
+  }
 });
 
 export default router;
