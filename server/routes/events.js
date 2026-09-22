@@ -8,7 +8,53 @@ import { query as pgQuery } from '../db/postgres.js';
 const router = express.Router();
 
 // Get all events (supports ?status=upcoming | ?status=past)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+  try {
+    const pgRes = await pgQuery('SELECT * FROM events ORDER BY created_at DESC');
+    if (pgRes?.rows?.length > 0) {
+      const pgEvents = pgRes.rows.map((row) => {
+        let schedule = [];
+        let coordinators = [];
+        try {
+          schedule = typeof row.agenda === 'string' ? JSON.parse(row.agenda) : (row.agenda || []);
+        } catch (e) {}
+        try {
+          coordinators = typeof row.coordinators === 'string' ? JSON.parse(row.coordinators) : (row.coordinators || []);
+        } catch (e) {}
+
+        return {
+          id: row.id,
+          title: row.title,
+          slug: row.slug || row.id,
+          category: row.category,
+          date: row.date,
+          time: row.time,
+          venue: row.venue,
+          description: row.description,
+          fee: parseFloat(row.fee) || 0,
+          isPaid: parseFloat(row.fee) > 0,
+          capacity: row.capacity,
+          registeredCount: row.registered_count || 0,
+          coverImage: row.banner_image,
+          bannerImage: row.banner_image,
+          images: [row.banner_image].filter(Boolean),
+          status: row.is_active ? 'upcoming' : 'past',
+          schedule,
+          coordinators
+        };
+      });
+
+      // Merge: PostgreSQL rows take precedence, keep unpersisted memory events as fallback
+      const pgIds = new Set(pgEvents.map((e) => e.id));
+      const memoryOnly = db.events.filter((e) => !pgIds.has(e.id));
+      db.events = [...pgEvents, ...memoryOnly];
+    }
+  } catch (err) {
+    // Fallback to local memory events
+  }
+
   const { status, category } = req.query;
   let filtered = db.events;
 
@@ -32,8 +78,54 @@ router.get('/', (req, res) => {
 });
 
 // Get individual event details by ID
-router.get('/:id', authenticateToken, (req, res) => {
-  const event = db.events.find((e) => e.id === req.params.id);
+router.get('/:id', authenticateToken, async (req, res) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+  let event = db.events.find((e) => e.id === req.params.id || e.slug === req.params.id);
+  if (!event) {
+    try {
+      const pgRes = await pgQuery(
+        'SELECT * FROM events WHERE id = $1 OR slug = $1 LIMIT 1',
+        [req.params.id]
+      );
+      if (pgRes?.rows?.length > 0) {
+        const row = pgRes.rows[0];
+        let schedule = [];
+        let coordinators = [];
+        try {
+          schedule = typeof row.agenda === 'string' ? JSON.parse(row.agenda) : (row.agenda || []);
+        } catch (e) {}
+        try {
+          coordinators = typeof row.coordinators === 'string' ? JSON.parse(row.coordinators) : (row.coordinators || []);
+        } catch (e) {}
+
+        event = {
+          id: row.id,
+          title: row.title,
+          slug: row.slug || row.id,
+          category: row.category,
+          date: row.date,
+          time: row.time,
+          venue: row.venue,
+          description: row.description,
+          fee: parseFloat(row.fee) || 0,
+          isPaid: parseFloat(row.fee) > 0,
+          capacity: row.capacity,
+          registeredCount: row.registered_count || 0,
+          coverImage: row.banner_image,
+          bannerImage: row.banner_image,
+          images: [row.banner_image].filter(Boolean),
+          status: row.is_active ? 'upcoming' : 'past',
+          schedule,
+          coordinators
+        };
+        db.events.push(event);
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }
+
   if (!event) {
     return res.status(404).json({ error: 'Event not found' });
   }
@@ -375,9 +467,13 @@ router.post('/', authenticateToken, requireAuth, requireRole(['admin']), (req, r
       ? (coverImage && !images.includes(coverImage) ? [coverImage, ...images] : images)
       : [primaryCover];
 
+    const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${Date.now().toString(36)}`;
+    const eventId = `evt_${Date.now()}_${Math.random().toString(36).substr(2, 3)}`;
+
     const newEvent = {
-      id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 3)}`,
+      id: eventId,
       title,
+      slug,
       date,
       time: time || '10:00 AM IST',
       venue,
@@ -409,15 +505,16 @@ router.post('/', authenticateToken, requireAuth, requireRole(['admin']), (req, r
     // Persist to Supabase PostgreSQL
     pgQuery(
       `INSERT INTO events (id, title, slug, category, date, time, venue, description, fee, capacity, registered_count, banner_image, agenda, coordinators, is_active)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 0, $11, $12, $13, true)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 0, $11, $12, $13, $14)
        ON CONFLICT (id) DO UPDATE SET
          title = EXCLUDED.title,
          description = EXCLUDED.description,
-         banner_image = EXCLUDED.banner_image`,
+         banner_image = EXCLUDED.banner_image,
+         is_active = EXCLUDED.is_active`,
       [
         newEvent.id,
         newEvent.title,
-        newEvent.slug || newEvent.id,
+        newEvent.slug,
         newEvent.category,
         newEvent.date,
         newEvent.time,
@@ -427,7 +524,8 @@ router.post('/', authenticateToken, requireAuth, requireRole(['admin']), (req, r
         newEvent.capacity,
         newEvent.coverImage,
         JSON.stringify(newEvent.schedule || []),
-        JSON.stringify(newEvent.coordinators || [])
+        JSON.stringify(newEvent.coordinators || []),
+        newEvent.status === 'upcoming'
       ]
     ).catch((err) => console.error('[PostgreSQL Event Insert Error]:', err.message));
 
