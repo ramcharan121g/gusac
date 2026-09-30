@@ -22,8 +22,9 @@ pool.on('error', (err) => {
 
 export async function query(text, params = []) {
   const start = Date.now();
-  const client = await pool.connect();
+  let client = null;
   try {
+    client = await pool.connect();
     const res = await client.query(text, params);
     const duration = Date.now() - start;
     if (process.env.NODE_ENV !== 'production' && duration > 100) {
@@ -31,10 +32,14 @@ export async function query(text, params = []) {
     }
     return res;
   } catch (err) {
-    console.error(`[PG Query Error] Failed on query: ${text.slice(0, 80)}`, err.message);
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[PostgreSQL DB Note]: ${err.message}`);
+    }
     throw err;
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
   }
 }
 
