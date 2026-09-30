@@ -100,23 +100,31 @@ export async function sendOtpEmail({ toEmail, name, otpCode, purpose = 'Account 
     return { success: true, mocked: true };
   }
 
-  const result = await mailer.sendMail({
-    from: EMAIL_SENDER,
-    to: toEmail,
-    replyTo: 'noreply@gusac.gitam.edu',
-    subject: `${otpCode} is your GUSAC Verification Code`,
-    text: `Your GUSAC verification code is: ${otpCode}. Valid for 10 minutes.`,
-    html,
-    priority: 'high',
-    headers: {
-      'X-Priority': '1 (Highest)',
-      'X-MSMail-Priority': 'High',
-      'Importance': 'High',
-      'X-Entity-Ref-ID': `otp-${Date.now()}`
-    }
-  });
+  try {
+    const result = await mailer.sendMail({
+      from: EMAIL_SENDER,
+      to: toEmail,
+      replyTo: 'noreply@gusac.gitam.edu',
+      subject: `${otpCode} is your GUSAC Verification Code`,
+      text: `Your GUSAC verification code is: ${otpCode}. Valid for 10 minutes.`,
+      html,
+      priority: 'high',
+      headers: {
+        'X-Priority': '1 (Highest)',
+        'X-MSMail-Priority': 'High',
+        'Importance': 'High',
+        'X-Entity-Ref-ID': `otp-${Date.now()}`
+      }
+    });
 
-  return { success: true, messageId: result.messageId };
+    return { success: true, messageId: result.messageId };
+  } catch (err) {
+    if (err.message?.includes('Unauthorized IP') || err.responseCode === 525) {
+      console.error('🚨 [Brevo SMTP IP Restriction Block]:', err.message);
+      console.error('👉 FIX: In your Brevo dashboard (Settings > Security > Authorized IPs), click "Deactivate" on "Block unauthorized IP addresses".');
+    }
+    throw err;
+  }
 }
 
 /**
@@ -398,23 +406,31 @@ export async function sendPasswordResetEmail({ toEmail, name, resetUrl }) {
     return { success: true, mocked: true };
   }
 
-  const result = await mailer.sendMail({
-    from: EMAIL_SENDER,
-    to: toEmail,
-    replyTo: 'noreply@gusac.gitam.edu',
-    subject: `🔐 Reset Your GUSAC Account Password`,
-    text: `Hello ${name || 'Innovator'},\n\nWe received a password reset request for your GUSAC account (${toEmail}).\n\nReset your password here (valid for 15 minutes):\n${resetUrl}\n\nIf you did not request this, you can safely ignore this email. Your account remains secure.\n\n— GUSAC Visakhapatnam Main Campus`,
-    html,
-    priority: 'high',
-    headers: {
-      'X-Priority': '1 (Highest)',
-      'X-MSMail-Priority': 'High',
-      'Importance': 'High',
-      'X-Entity-Ref-ID': `pwd-reset-${Date.now()}`
-    }
-  });
+  try {
+    const result = await mailer.sendMail({
+      from: EMAIL_SENDER,
+      to: toEmail,
+      replyTo: 'noreply@gusac.gitam.edu',
+      subject: `🔐 Reset Your GUSAC Account Password`,
+      text: `Hello ${name || 'Innovator'},\n\nWe received a password reset request for your GUSAC account (${toEmail}).\n\nReset your password here (valid for 15 minutes):\n${resetUrl}\n\nIf you did not request this, you can safely ignore this email. Your account remains secure.\n\n— GUSAC Visakhapatnam Main Campus`,
+      html,
+      priority: 'high',
+      headers: {
+        'X-Priority': '1 (Highest)',
+        'X-MSMail-Priority': 'High',
+        'Importance': 'High',
+        'X-Entity-Ref-ID': `pwd-reset-${Date.now()}`
+      }
+    });
 
-  return { success: true, messageId: result.messageId };
+    return { success: true, messageId: result.messageId };
+  } catch (err) {
+    if (err.message?.includes('Unauthorized IP') || err.responseCode === 525) {
+      console.error('🚨 [Brevo SMTP IP Restriction Block]:', err.message);
+      console.error('👉 FIX: In your Brevo dashboard (Settings > Security > Authorized IPs), click "Deactivate" on "Block unauthorized IP addresses".');
+    }
+    throw err;
+  }
 }
 
 

@@ -232,7 +232,14 @@ if (!process.env.VERCEL) {
         if (mailer) {
           mailer.verify()
             .then(() => console.log('⚡ [Brevo SMTP] Connection pool pre-warmed & active on Port 465 direct SSL'))
-            .catch((e) => console.warn('[Brevo SMTP Pool Note]:', e.message));
+            .catch((e) => {
+              if (e.message?.includes('Unauthorized IP') || e.responseCode === 525) {
+                console.warn('⚠️ [Brevo SMTP Alert]: Brevo rejected connection with "525 5.7.1 Unauthorized IP address".');
+                console.warn('👉 FIX: In your Brevo dashboard (Settings > Security > Authorized IPs), click "Deactivate" on "Block unauthorized IP addresses".');
+              } else {
+                console.warn('[Brevo SMTP Pool Note]:', e.message);
+              }
+            });
         }
       });
     } catch (_) {}
